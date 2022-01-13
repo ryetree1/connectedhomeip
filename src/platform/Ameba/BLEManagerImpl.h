@@ -165,6 +165,11 @@ private:
     static void BleAdvTimeoutHandler(TimerHandle_t xTimer);
     static void CancelBleAdvTimeoutTimer(void);
     static void StartBleAdvTimeoutTimer(uint32_t aTimeoutInMs);
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+    static int gatt_svr_chr_access_additional_data(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt * ctxt,
+                                                   void * arg);
+    void HandleC3CharRead(struct ble_gatt_char_context * param);
+#endif /* CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING */
 };
 
 /**

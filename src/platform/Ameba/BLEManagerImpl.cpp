@@ -25,6 +25,7 @@
 /* this file behaves like a config.h, comes first */
 #include <crypto/CHIPCryptoPAL.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
+#include <setup_payload/AdditionalDataPayloadGenerator.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 #include <ble/CHIPBleServiceData.h>
@@ -116,13 +117,62 @@ typedef struct
 } ble_uuid16_t;
 
 const ble_uuid16_t ShortUUID_CHIPoBLEService = { BLE_UUID_TYPE_16, 0xFFF6 };
+
+const ble_uuid128_t UUID128_CHIPoBLEChar_RX = {
+    BLE_UUID_TYPE_128, { 0x11, 0x9D, 0x9F, 0x42, 0x9C, 0x4F, 0x9F, 0x95, 0x59, 0x45, 0x3D, 0x26, 0xF5, 0x2E, 0xEE, 0x18 }
+};
 const ChipBleUUID ChipUUID_CHIPoBLEChar_RX = { { 0x18, 0xEE, 0x2E, 0xF5, 0x26, 0x3D, 0x45, 0x59, 0x95, 0x9F, 0x4F, 0x9C, 0x42, 0x9F,
                                                  0x9D, 0x11 } };
 const ChipBleUUID ChipUUID_CHIPoBLEChar_TX = { { 0x18, 0xEE, 0x2E, 0xF5, 0x26, 0x3D, 0x45, 0x59, 0x95, 0x9F, 0x4F, 0x9C, 0x42, 0x9F,
                                                  0x9D, 0x12 } };
+const ble_uuid128_t UUID_CHIPoBLEChar_TX   = {
+    { BLE_UUID_TYPE_128 }, { 0x12, 0x9D, 0x9F, 0x42, 0x9C, 0x4F, 0x9F, 0x95, 0x59, 0x45, 0x3D, 0x26, 0xF5, 0x2E, 0xEE, 0x18 }
+};
+
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+const ble_uuid128_t UUID_CHIPoBLEChar_C3 = {
+    { BLE_UUID_TYPE_128 }, { 0x04, 0x8F, 0x21, 0x83, 0x8A, 0x74, 0x7D, 0xB8, 0xF2, 0x45, 0x72, 0x87, 0x38, 0x02, 0x63, 0x64 }
+};
+#endif
+
 } // namespace
 
 BLEManagerImpl BLEManagerImpl::sInstance;
+
+const struct ble_gatt_svc_def BLEManagerImpl::CHIPoBLEGATTAttrs[] = {
+    { .type = BLE_GATT_SVC_TYPE_PRIMARY,
+      .uuid = (ble_uuid_t *) (&ShortUUID_CHIPoBLEService),
+      .characteristics =
+          (struct ble_gatt_chr_def[]){
+              {
+                  .uuid       = (ble_uuid_t *) (&UUID128_CHIPoBLEChar_RX),
+                  .access_cb  = gatt_svr_chr_access,
+                  .flags      = BLE_GATT_CHR_F_WRITE,
+                  .val_handle = &sInstance.mRXCharAttrHandle,
+              },
+              {
+                  .uuid       = (ble_uuid_t *) (&UUID_CHIPoBLEChar_TX),
+                  .access_cb  = gatt_svr_chr_access,
+                  .flags      = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+                  .val_handle = &sInstance.mTXCharCCCDAttrHandle,
+              },
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+              {
+                  .uuid       = (ble_uuid_t *) (&UUID_CHIPoBLEChar_C3),
+                  .access_cb  = gatt_svr_chr_access_additional_data,
+                  .flags      = BLE_GATT_CHR_F_READ,
+                  .val_handle = &sInstance.mC3CharAttrHandle,
+              },
+#endif
+              {
+                  0, /* No more characteristics in this service */
+              },
+          } },
+
+    {
+        0, /* No more services. */
+    },
+};
 
 CHIP_ERROR BLEManagerImpl::_Init()
 {
@@ -131,6 +181,12 @@ CHIP_ERROR BLEManagerImpl::_Init()
     // Initialize the CHIP BleLayer.
     err = BleLayer::Init(this, this, &DeviceLayer::SystemLayer());
     SuccessOrExit(err);
+
+    mRXCharAttrHandle = 0;
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+    mC3CharAttrHandle = 0;
+#endif
+    mTXCharCCCDAttrHandle = 0;
 
     mServiceMode = ConnectivityManager::kCHIPoBLEServiceMode_Enabled;
 
@@ -614,6 +670,10 @@ CHIP_ERROR BLEManagerImpl::ConfigureAdvertisingData(void)
         ExitNow();
     }
 
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+    deviceIdInfo.SetAdditionalDataFlag(true);
+#endif
+
     VerifyOrExit(index + sizeof(deviceIdInfo) <= sizeof(advData), err = CHIP_ERROR_OUTBOUND_MESSAGE_TOO_BIG);
     memcpy(&advData[index], &deviceIdInfo, sizeof(deviceIdInfo));
     index = static_cast<uint8_t>(index + sizeof(deviceIdInfo));
@@ -932,6 +992,69 @@ CHIP_ERROR BLEManagerImpl::ble_svr_gap_event(void * param, int cb_type, void * p
     }
     return err;
 }
+
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+void BLEManagerImpl::HandleC3CharRead(struct ble_gatt_char_context * param)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+    chip::System::PacketBufferHandle bufferHandle;
+
+    char serialNumber[ConfigurationManager::kMaxSerialNumberLength + 1];
+    uint16_t lifetimeCounter = 0;
+    BitFlags<AdditionalDataFields> additionalDataFields;
+
+#if CHIP_ENABLE_ROTATING_DEVICE_ID
+    err = ConfigurationMgr().GetSerialNumber(serialNumber, sizeof(serialNumber));
+    SuccessOrExit(err);
+    err = ConfigurationMgr().GetLifetimeCounter(lifetimeCounter);
+    SuccessOrExit(err);
+
+    additionalDataFields.Set(AdditionalDataFields::RotatingDeviceId);
+#endif /* CHIP_ENABLE_ROTATING_DEVICE_ID */
+
+    err = AdditionalDataPayloadGenerator().generateAdditionalDataPayload(lifetimeCounter, serialNumber, strlen(serialNumber),
+                                                                         bufferHandle, additionalDataFields);
+    SuccessOrExit(err);
+
+    os_mbuf_append(param->ctxt->om, bufferHandle->Start(), bufferHandle->DataLength());
+
+exit:
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(DeviceLayer, "Failed to generate TLV encoded Additional Data (%s)", __func__);
+    }
+    return;
+}
+
+int BLEManagerImpl::gatt_svr_chr_access_additional_data(uint16_t conn_handle, uint16_t attr_handle,
+                                                        struct ble_gatt_access_ctxt * ctxt, void * arg)
+{
+    struct ble_gatt_char_context param;
+    int err = 0;
+
+    memset(&param, 0, sizeof(struct ble_gatt_char_context));
+
+    switch (ctxt->op)
+    {
+    case BLE_GATT_ACCESS_OP_READ_CHR:
+
+        param.conn_handle = conn_handle;
+        param.attr_handle = attr_handle;
+        param.ctxt        = ctxt;
+        param.arg         = arg;
+        sInstance.HandleC3CharRead(&param);
+        break;
+
+    default:
+        err = BLE_ATT_ERR_UNLIKELY;
+        break;
+    }
+
+    PlatformMgr().ScheduleWork(DriveBLEState, 0);
+
+    return err;
+}
+#endif /* CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING */
 
 CHIP_ERROR BLEManagerImpl::gatt_svr_chr_access(void * param, T_SERVER_ID service_id, TBTCONFIG_CALLBACK_DATA * p_data)
 {
