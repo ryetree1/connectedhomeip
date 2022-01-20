@@ -49,7 +49,9 @@
 #include "wifi_conf.h"
 //#include "complete_ble_service.h"
 #include "app_msg.h"
-
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+#include <setup_payload/AdditionalDataPayloadGenerator.h>
+#endif
 extern void wifi_bt_coex_set_bt_on(void);
 /*******************************************************************************
  * Local data types
@@ -209,7 +211,7 @@ exit:
     return err;
 }
 
-void BLEManagerImpl::HandleTXCharRead(struct ble_gatt_char_context * param)
+void BLEManagerImpl::HandleTXCharRead(void * param)
 {
     /* Not supported */
     ChipLogError(DeviceLayer, "BLEManagerImpl::HandleTXCharRead() not supported");
@@ -1058,12 +1060,13 @@ int BLEManagerImpl::gatt_svr_chr_access_additional_data(uint16_t conn_handle, ui
 
 CHIP_ERROR BLEManagerImpl::gatt_svr_chr_access(void * param, T_SERVER_ID service_id, TBTCONFIG_CALLBACK_DATA * p_data)
 {
-
+printf("In gatt_svr_chr_access!!!\r\n");
     CHIP_ERROR err = CHIP_NO_ERROR;
-
+        printf("service_id = %d\r\n",service_id);
     if (service_id == SERVICE_PROFILE_GENERAL_ID)
     {
         T_SERVER_APP_CB_DATA * p_param = (T_SERVER_APP_CB_DATA *) p_data;
+        printf("If yes p_param->eventId = %d\r\n",p_param->eventId);
         switch (p_param->eventId)
         {
         case PROFILE_EVT_SRV_REG_COMPLETE: // srv register result event.
@@ -1084,9 +1087,15 @@ CHIP_ERROR BLEManagerImpl::gatt_svr_chr_access(void * param, T_SERVER_ID service
         uint8_t * p_value                = p_data->msg_data.write.p_value;
         uint16_t len                     = p_data->msg_data.write.len;
         BLEManagerImpl * blemgr          = static_cast<BLEManagerImpl *>(param);
+        printf("ELSE yes msg_type = %d\r\n",msg_type);
+        printf("p_data->conn_id = %d\r\n",p_data->conn_id);
+        printf("p_value = %d\r\n",p_value);
+        printf("len = %d\r\n",len);
+        
         switch (msg_type)
         {
         case SERVICE_CALLBACK_TYPE_READ_CHAR_VALUE:
+            sInstance.HandleC3CharRead(p_data);
             break;
 
         case SERVICE_CALLBACK_TYPE_WRITE_CHAR_VALUE:
@@ -1142,12 +1151,63 @@ void BLEManagerImpl::HandleRXCharWrite(uint8_t * p_value, uint16_t len, uint8_t 
     }
 }
 
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+//void BLEManagerImpl::HandleC3CharRead(uint8_t * p_value, uint16_t len, uint8_t conn_id)
+void BLEManagerImpl::HandleC3CharRead(TBTCONFIG_CALLBACK_DATA * p_data)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+ //   PacketBufferHandle buf = System::PacketBufferHandle::New(len, 0);
+ //   memcpy(buf->Start(), p_value, len);
+ //   buf->SetDataLength(len);
+
+int i = 0  ;
+
+    PacketBufferHandle bufferHandle;
+printf("HandleC3CharRead\r\n");
+    char serialNumber[ConfigurationManager::kMaxSerialNumberLength + 1] = {};
+    uint16_t lifetimeCounter = 0;
+    BitFlags<AdditionalDataFields> additionalDataFields;
+
+#if CHIP_ENABLE_ROTATING_DEVICE_ID
+printf("CHIP_ENABLE_ROTATING_DEVICE_ID=%d\r\n",CHIP_ENABLE_ROTATING_DEVICE_ID);
+    err = ConfigurationMgr().GetSerialNumber(serialNumber, sizeof(serialNumber));
+    SuccessOrExit(err);
+    err = ConfigurationMgr().GetLifetimeCounter(lifetimeCounter);
+    SuccessOrExit(err);
+
+    additionalDataFields.Set(AdditionalDataFields::RotatingDeviceId);
+#endif /* CHIP_ENABLE_ROTATING_DEVICE_ID */
+
+    err = AdditionalDataPayloadGenerator().generateAdditionalDataPayload(lifetimeCounter, serialNumber, strlen(serialNumber),
+                                                                         bufferHandle, additionalDataFields);
+    SuccessOrExit(err);
+    
+printf("bufferHandle->DataLength()=%d\r\n",bufferHandle->DataLength());
+for ( i = 0; i < bufferHandle->DataLength(); i++ )
+{
+printf("2_%d\r\n", bufferHandle->Start()[i] );
+}
+
+p_data->msg_data.write.p_value = bufferHandle->Start();
+p_data->msg_data.write.len = bufferHandle->DataLength();
+       
+exit:
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(DeviceLayer, "Failed to generate TLV encoded Additional Data (%s)", __func__);
+    }
+    return;
+}
+#endif
+
 int BLEManagerImpl::ble_callback_dispatcher(void * param, void * p_cb_data, int type, T_CHIP_BLEMGR_CALLBACK_TYPE callback_type)
 {
+printf("%s %d==========\n", __func__, __LINE__);
     BLEManagerImpl * blemgr = static_cast<BLEManagerImpl *>(param);
     switch (callback_type)
     {
     case CB_PROFILE_CALLBACK:
+        printf("CB_PROFILE_CALLBACK\r\n");
         blemgr->gatt_svr_chr_access(param, type, (TBTCONFIG_CALLBACK_DATA *) p_cb_data);
         break;
     case CB_GAP_CALLBACK:

@@ -143,7 +143,10 @@ private:
     CHIP_ERROR ConfigureAdvertisingData(void);
 
     void HandleRXCharWrite(uint8_t *, uint16_t, uint8_t);
-    void HandleTXCharRead(struct ble_gatt_char_context * param);
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+    void HandleC3CharRead(TBTCONFIG_CALLBACK_DATA * p_data);
+#endif
+    void HandleTXCharRead(void * param);
     void HandleTXCharCCCDRead(void * param);
     void HandleTXCharCCCDWrite(int, int, int);
     CHIP_ERROR HandleTXComplete(int);
