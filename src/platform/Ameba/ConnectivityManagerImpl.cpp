@@ -138,16 +138,32 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    if (event->Type == DeviceEventType::kRtkWiFiStationConnectedEvent)
+    //if (event->Type == DeviceEventType::kRtkWiFiStationConnectedEvent)
+    if (event->Type == DeviceEventType::kAmebaSystemEvents)
     {
-        ChipLogProgress(DeviceLayer, "WiFiStationConnected");
-        if (mWiFiStationState == kWiFiStationState_Connecting)
+        if (event->Platform.AmebaSystemsEvents.AmebaWiFiEventID == WIFI_EVENT_CONNECT)
         {
-            ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
+            ChipLogProgress(DeviceLayer, "WiFiStationConnected");
+            if (mWiFiStationState == kWiFiStationState_Connecting)
+            {
+                ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
+            }
+            DriveStationState();
+            DHCPProcess();
         }
-        DriveStationState();
-        DHCPProcess();
+        if (event->Platform.AmebaSystemsEvents.AmebaWiFiEventID == WIFI_EVENT_DISCONNECT)
+        {
+            ChipLogProgress(DeviceLayer, "WiFiStationDisconnected");
+            //NetworkCommissioning::AmebaWiFiDriver::GetInstance().SetLastDisconnectReason(event);
+            if (mWiFiStationState == kWiFiStationState_Connecting)
+            {
+                ChangeWiFiStationState(kWiFiStationState_Connecting_Failed);
+            }
+            DriveStationState();
+        }
     }
+
+    // TODO: Move scan complete into kAmebaSystemEvents
     if (event->Type == DeviceEventType::kRtkWiFiScanCompletedEvent)
     {
         ChipLogProgress(DeviceLayer, "WiFiScanCompleted");
@@ -540,7 +556,7 @@ void ConnectivityManagerImpl::DriveStationState()
                 ChipLogProgress(DeviceLayer, "Attempting to connect WiFi station interface");
                 rtw_wifi_setting_t wifi_info;
                 CHIP_GetWiFiConfig(&wifi_info);
-                wifi_reg_event_handler(WIFI_EVENT_CONNECT, ConnectivityManagerImpl::RtkWiFiStationConnectedHandler, NULL);
+                //wifi_reg_event_handler(WIFI_EVENT_CONNECT, ConnectivityManagerImpl::RtkWiFiStationConnectedHandler, NULL);
                 wifi_connect((char *) wifi_info.ssid, RTW_SECURITY_WPA_WPA2_MIXED, (char *) wifi_info.password,
                              strlen((const char *) wifi_info.ssid), strlen((const char *) wifi_info.password), 0, NULL);
                 ChangeWiFiStationState(kWiFiStationState_Connecting);

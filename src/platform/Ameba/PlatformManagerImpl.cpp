@@ -69,8 +69,15 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 
     mStartTime = System::SystemClock().GetMonotonicTimestamp();
 
-    // TODO Wi-Fi Initialzation currently done through the example app needs to be moved into here.
-    // for now we will let this happen that way and assume all is OK
+    // Register Ameba wifi event handler
+    WIFI_EVENT_INDICATE wifi_event_id = WIFI_EVENT_CONNECT;
+    wifi_reg_event_handler(WIFI_EVENT_CONNECT, PlatformManagerImpl::HandleAmebaSystemEvent, &wifi_event_id);
+
+    wifi_event_id = WIFI_EVENT_DISCONNECT;
+    wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, PlatformManagerImpl::HandleAmebaSystemEvent, &wifi_event_id);
+
+    wifi_event_id = WIFI_EVENT_SCAN_DONE;
+    wifi_reg_event_handler(WIFI_EVENT_SCAN_DONE, PlatformManagerImpl::HandleAmebaSystemEvent, &wifi_event_id);
 
     chip::Crypto::add_entropy_source(app_entropy_source, NULL, 1);
 
@@ -111,6 +118,16 @@ CHIP_ERROR PlatformManagerImpl::_Shutdown()
     }
 
     return Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_Shutdown();
+}
+
+static void PlatformManagerImpl::HandleAmebaSystemEvent(char * buf, int buf_len, int flags, void * userdata)
+{
+    ChipDeviceEvent event;
+    memset(&event, 0, sizeof(event));
+    event.Type = DeviceEventType::kAmebaSystemEvents;
+    event.Platform.AmebaSystemEvents.AmebaWiFiEventID = (WIFI_EVENT_INDICATE) (*userdata);
+
+    sInstance.PostEventOrDie(&event);
 }
 
 } // namespace DeviceLayer

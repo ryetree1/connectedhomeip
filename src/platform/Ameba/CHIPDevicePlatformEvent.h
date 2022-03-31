@@ -25,6 +25,7 @@
 #pragma once
 
 #include <platform/CHIPDeviceEvent.h>
+#include <wifi_constants.h>
 
 namespace chip {
 namespace DeviceLayer {
@@ -33,14 +34,15 @@ namespace DeviceEventType {
 /**
  * Enumerates platform-specific event types that are visible to the application.
  */
-enum PublicPlatformSpecificEventTypes
+enum
 {
-    /* None currently defined */
+    kAmebaSystemEvents = kRange_PublicPlatformSpecific
 };
 
 /**
  * Enumerates platform-specific event types that are internal to the chip Device Layer.
  */
+#if 1
 enum InternalPlatformSpecificEventTypes
 {
     kQorvoBLEConnected = kRange_InternalPlatformSpecific,
@@ -51,6 +53,7 @@ enum InternalPlatformSpecificEventTypes
     kRtkWiFiStationConnectedEvent,
     kRtkWiFiScanCompletedEvent,
 };
+#endif
 
 } // namespace DeviceEventType
 
@@ -59,26 +62,11 @@ enum InternalPlatformSpecificEventTypes
  */
 struct ChipDevicePlatformEvent final
 {
-    // TODO - add platform specific definition extension
     union
     {
-        struct
-        {
-            uint8_t dummy;
-        } QorvoBLEConnected;
-        struct
-        {
-            uint8_t dummy;
-        } CHIPoBLECCCWriteEvent;
-        struct
-        {
-            uint8_t dummy;
-        } CHIPoBLERXCharWriteEvent;
-        struct
-        {
-            uint8_t dummy;
-        } CHIPoBLETXCharWriteEvent;
-    };
+        WIFI_EVENT_INDICATE AmebaWiFiEventID;
+        uint8_t AmebaOtherEventID;
+    } AmebaSystemEvents;
 };
 
 } // namespace DeviceLayer

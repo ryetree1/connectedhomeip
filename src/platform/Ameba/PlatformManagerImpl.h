@@ -54,6 +54,7 @@ private:
 
     CHIP_ERROR _InitChipStack(void);
     CHIP_ERROR _Shutdown();
+    static void HandleAmebaSystemEvent(char * buf, int buf_len, int flags, void * userdata);
 
     // ===== Members for internal use by the following friends.
 
