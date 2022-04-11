@@ -12,7 +12,11 @@ set(matter_enable_rotating_id 1)
 
 get_filename_component(CHIP_ROOT ${chip_dir} REALPATH)
 get_filename_component(CHIP_OUTPUT ${chip_dir_output} REALPATH)
-get_filename_component(LIB_ROOT ${prj_root}/GCC-RELEASE/project_hp/asdk/lib/application REALPATH)
+if (matter_platform_8721d)
+    get_filename_component(LIB_ROOT ${prj_root}/GCC-RELEASE/project_hp/asdk/lib/application REALPATH)
+elseif (matter_platform_8710c)
+    get_filename_component(LIB_ROOT ${sdk_root}/component/soc/realtek/8710c/misc/bsp/lib/common/GCC REALPATH)
+endif()
 
 include(ExternalProject)
 
@@ -31,6 +35,20 @@ list(
     -DMBEDTLS_CONFIG_FILE=<mbedtls_config.h>
     -D_POSIX_REALTIME_SIGNALS
 )
+
+if (matter_platform_8721d)
+list(
+    APPEND CHIP_CFLAGS
+
+    -DCONFIG_PLATFORM_8721D
+)
+elseif (matter_platform_8710c)
+list(
+    APPEND CHIP_CFLAGS
+
+    -DCONFIG_PLATFORM_8710C
+)
+endif()
 
 list(
     APPEND CHIP_CXXFLAGS

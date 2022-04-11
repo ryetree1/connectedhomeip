@@ -8,7 +8,11 @@ set(dir "${sdk_root}/component/common/api")
 set(chip_main chip_main)
 set(list_chip_main_sources chip_main_sources)
 
-include(${prj_root}/GCC-RELEASE/project_hp/asdk/includepath.cmake)
+if (matter_platform_8721d)
+    include(${prj_root}/GCC-RELEASE/project_hp/asdk/includepath.cmake)
+elseif (matter_platform_8710c)
+    include(${prj_root}/GCC-RELEASE/cmake/includepath.cmake)
+endif()
 
 if (matter_enable_ota_requestor)
 list(
@@ -104,8 +108,16 @@ target_compile_definitions(${chip_main} PRIVATE ${chip_main_flags} )
 target_compile_options(${chip_main} PRIVATE ${chip_main_cpp_flags})
 
 # move static library post build command
+if (matter_platform_8721d)
 add_custom_command(
     TARGET ${chip_main}
     POST_BUILD
     COMMAND cp lib${chip_main}.a ${CMAKE_CURRENT_SOURCE_DIR}/lib/application
 )
+elseif (matter_platform_8710c)
+add_custom_command(
+    TARGET ${chip_main}
+    POST_BUILD
+    COMMAND cp lib${chip_main}.a ${sdk_root}/component/soc/realtek/8710c/misc/bsp/lib/common/GCC
+)
+endif()
