@@ -17,11 +17,11 @@
 
 #include <platform_stdlib.h>
 
-#include "CHIPDeviceManager.h"
-#include "DeviceCallbacks.h"
-#include "Globals.h"
-#include "LEDWidget.h"
 #include "chip_porting.h"
+#include "AppTask.h"
+#include <common/CHIPDeviceManager.h>
+#include <common/DeviceCallbacks.h>
+#include <common/LEDWidget.h>
 #include <DeviceInfoProviderImpl.h>
 #include <lwip_netconf.h>
 
@@ -67,33 +67,15 @@ void NetWorkCommissioningInstInit()
     emberAfEndpointEnableDisable(kNetworkCommissioningEndpointSecondary, false);
 }
 
-Identify gIdentify0 = {
-    chip::EndpointId{ 0 },
-    [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
-    [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
-};
-
-Identify gIdentify1 = {
-    chip::EndpointId{ 1 },
-    [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
-    [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
-};
-
-#ifdef CONFIG_PLATFORM_8721D
-#define STATUS_LED_GPIO_NUM PB_5
-#elif defined(CONFIG_PLATFORM_8710C)
-#define STATUS_LED_GPIO_NUM PA_20
-#else
-#define STATUS_LED_GPIO_NUM NC
-#endif
-
 static DeviceCallbacks EchoCallbacks;
 chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 
 static void InitServer(intptr_t context)
 {
+#if CONFIG_ENABLE_PW_RPC
+    chip::rpc::Init();
+#endif
+
     // Init ZCL Data Model and CHIP App Server
     static chip::CommonCaseDeviceServerInitParams initParams;
     initParams.InitializeStaticResourcesBeforeServerInit();
@@ -117,10 +99,6 @@ extern "C" void ChipTest(void)
     ChipLogProgress(DeviceLayer, "All Clusters Demo!");
     CHIP_ERROR err = CHIP_NO_ERROR;
 
-#if CONFIG_ENABLE_PW_RPC
-    chip::rpc::Init();
-#endif
-
     initPref();
 
     CHIPDeviceManager & deviceMgr = CHIPDeviceManager::GetInstance();
@@ -130,17 +108,12 @@ extern "C" void ChipTest(void)
     {
         ChipLogError(DeviceLayer, "DeviceManagerInit() - ERROR!\r\n");
     }
-    else
+
+    err = GetAppTask().StartAppTask();
+    if (err != CHIP_NO_ERROR)
     {
-        ChipLogProgress(DeviceLayer, "DeviceManagerInit() - OK\r\n");
+        ChipLogError(DeviceLayer, "StartAppTask() - ERROR!\r\n");
     }
 
     chip::DeviceLayer::PlatformMgr().ScheduleWork(InitServer, 0);
-
-    statusLED1.Init(STATUS_LED_GPIO_NUM);
-}
-
-bool lowPowerClusterSleep()
-{
-    return true;
 }

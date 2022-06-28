@@ -80,6 +80,7 @@ exit:
 } // namespace DeviceManager
 } // namespace chip
 
+#if 0
 void MatterPostAttributeChangeCallback(const chip::app::ConcreteAttributePath & path, uint8_t type, uint16_t size, uint8_t * value)
 {
     chip::DeviceManager::CHIPDeviceManagerCallbacks * cb =
@@ -89,3 +90,4 @@ void MatterPostAttributeChangeCallback(const chip::app::ConcreteAttributePath & 
         cb->PostAttributeChangeCallback(path.mEndpointId, path.mClusterId, path.mAttributeId, type, size, value);
     }
 }
+#endif

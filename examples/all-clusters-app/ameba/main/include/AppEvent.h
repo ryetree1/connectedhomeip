@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2022 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,35 @@
  */
 
 #pragma once
+#include <platform_stdlib.h>
 
-#include "LEDWidget.h"
+struct AppEvent;
+typedef void (*EventHandler)(AppEvent *);
 
-extern LEDWidget statusLED1;
+struct AppEvent
+{
+    enum AppEventTypes
+    {
+        kEventType_Button = 0,
+        kEventType_Timer,
+        kEventType_Light,
+        kEventType_Install,
+    };
+
+    uint16_t mType;
+
+    union
+    {
+        struct
+        {
+            uint8_t mPinNo;
+            uint8_t mAction;
+        } mButtonEvent;
+        struct
+        {
+            void * mContext;
+        } mTimerEvent;
+    };
+
+    EventHandler mHandler;
+};
