@@ -125,6 +125,15 @@ list(
 )
 endif (matter_enable_rpc)
 
+if (matter_enable_shell)
+list(
+    APPEND ${list_chip_main_sources}
+    #shell
+    ${chip_dir}/examples/all-clusters-app/ameba/main/ShellCommands.cpp
+    ${chip_dir}/examples/platform/ameba/shell/launch_shell.cpp
+)
+endif (matter_enable_shell)
+
 if (matter_enable_ota_requestor)
 list(
     APPEND ${list_chip_main_sources}
@@ -261,6 +270,14 @@ list(
     -DCONFIG_ENABLE_PW_RPC=1
 )
 endif (matter_enable_rpc)
+
+if (matter_enable_shell)
+list(
+    APPEND chip_main_flags
+
+    -DCONFIG_ENABLE_CHIP_SHELL=1
+)
+endif (matter_enable_shell)
 
 list(
     APPEND chip_main_cpp_flags

@@ -41,7 +41,12 @@
 #include <support/CHIPMem.h>
 
 #if CONFIG_ENABLE_PW_RPC
-#include "Rpc.h"
+#include <Rpc.h>
+#endif
+
+#if CONFIG_ENABLE_CHIP_SHELL
+#include "ShellCommands.h"
+#include <shell/launch_shell.h>
 #endif
 
 using namespace ::chip;
@@ -74,6 +79,12 @@ static void InitServer(intptr_t context)
 {
 #if CONFIG_ENABLE_PW_RPC
     chip::rpc::Init();
+#endif
+
+#if CONFIG_ENABLE_CHIP_SHELL
+    chip::LaunchShell();
+    chip::Shell::OnOffCommands::GetInstance().Register();
+    chip::Shell::CASECommands::GetInstance().Register();
 #endif
 
     // Init ZCL Data Model and CHIP App Server
