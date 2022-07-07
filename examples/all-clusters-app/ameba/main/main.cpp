@@ -25,7 +25,6 @@
 #include <DeviceInfoProviderImpl.h>
 #include <lwip_netconf.h>
 
-#include <app/clusters/identify-server/identify-server.h>
 #include <app/clusters/network-commissioning/network-commissioning.h>
 #include <app/server/OnboardingCodesUtil.h>
 #include <app/server/Server.h>

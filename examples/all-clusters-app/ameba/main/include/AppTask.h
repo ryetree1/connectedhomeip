@@ -18,6 +18,7 @@
 
 #pragma once
 #include "AppEvent.h"
+#include "LightingManager.h"
 #include <common/LEDWidget.h>
 #include <platform/CHIPDeviceLayer.h>
 
@@ -28,30 +29,6 @@
 #define APP_ERROR_CREATE_TIMER_FAILED CHIP_APPLICATION_ERROR(0x04)
 #define APP_ERROR_START_TIMER_FAILED CHIP_APPLICATION_ERROR(0x05)
 #define APP_ERROR_STOP_TIMER_FAILED CHIP_APPLICATION_ERROR(0x06)
-
-// TODO: Move to LightingManager
-#ifdef CONFIG_PLATFORM_8721D
-#define NORMAL_LED_GPIO_NUM         PB_5
-#define RED_LED_GPIO_NUM            PB_6
-#define GREEN_LED_GPIO_NUM          PB_7
-#define BLUE_LED_GPIO_NUM           PB_8
-#define COOL_WHITE_LED_GPIO_NUM     PB_9
-#define WARM_WHITE_LED_GPIO_NUM     PB_10
-#elif defined(CONFIG_PLATFORM_8710C)
-#define NORMAL_LED_GPIO_NUM         PA_17
-#define RED_LED_GPIO_NUM            PA_18
-#define GREEN_LED_GPIO_NUM          PA_19
-#define BLUE_LED_GPIO_NUM           PA_20
-#define COOL_WHITE_LED_GPIO_NUM     PA_4
-#define WARM_WHITE_LED_GPIO_NUM     PA_17
-#else
-#define NORMAL_LED_GPIO_NUM         NC
-#define RED_LED_GPIO_NUM            NC
-#define GREEN_LED_GPIO_NUM          NC
-#define BLUE_LED_GPIO_NUM           NC
-#define COOL_WHITE_LED_GPIO_NUM     NC
-#define WARM_WHITE_LED_GPIO_NUM     NC
-#endif
 
 class AppTask
 {

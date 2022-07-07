@@ -30,9 +30,6 @@ TaskHandle_t sAppTaskHandle;
 
 } // namespace
 
-// TODO: Move to LightingManager
-LEDWidget onoffLED;
-
 AppTask AppTask::sAppTask;
 
 CHIP_ERROR AppTask::StartAppTask()
@@ -53,8 +50,13 @@ CHIP_ERROR AppTask::StartAppTask()
 CHIP_ERROR AppTask::Init()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    // TODO: Move to LightingManager
-    onoffLED.Init(NORMAL_LED_GPIO_NUM);
+    // LightingManager takes care of LED initialization
+    err = LightMgr().Init();
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(AppServer, "LightMgr().Init() failed");
+    }
+
     return err;
 }
 

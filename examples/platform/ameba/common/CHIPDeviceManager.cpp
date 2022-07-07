@@ -80,9 +80,10 @@ exit:
 } // namespace DeviceManager
 } // namespace chip
 
-#if 0
+#if 1
 void MatterPostAttributeChangeCallback(const chip::app::ConcreteAttributePath & path, uint8_t type, uint16_t size, uint8_t * value)
 {
+    printf("\r\n\r\nTESTING\r\n\r\n");
     chip::DeviceManager::CHIPDeviceManagerCallbacks * cb =
         chip::DeviceManager::CHIPDeviceManager::GetInstance().GetCHIPDeviceManagerCallbacks();
     if (cb != nullptr)

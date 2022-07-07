@@ -156,14 +156,15 @@ list(
     ${chip_dir}/examples/all-clusters-app/all-clusters-common/src/bridged-actions-stub.cpp
     ${chip_dir}/examples/all-clusters-app/all-clusters-common/src/static-supported-modes-manager.cpp
 
-    ${chip_dir}/examples/all-clusters-app/ameba/main/main.cpp
-    ${chip_dir}/examples/all-clusters-app/ameba/main/AppTask.cpp
-    ${chip_dir}/examples/all-clusters-app/ameba/main/ZclCallbacks.cpp
-    ${chip_dir}/examples/all-clusters-app/ameba/main/DsoHack.cpp
-
     ${chip_dir}/examples/platform/ameba/common/CHIPDeviceManager.cpp
     ${chip_dir}/examples/platform/ameba/common/DeviceCallbacks.cpp
     ${chip_dir}/examples/platform/ameba/common/LEDWidget.cpp
+
+    ${chip_dir}/examples/all-clusters-app/ameba/main/main.cpp
+    ${chip_dir}/examples/all-clusters-app/ameba/main/AppTask.cpp
+    ${chip_dir}/examples/all-clusters-app/ameba/main/ZclCallbacks.cpp
+    ${chip_dir}/examples/all-clusters-app/ameba/main/LightingManager.cpp
+    ${chip_dir}/examples/all-clusters-app/ameba/main/DsoHack.cpp
 
     ${chip_dir}/examples/providers/DeviceInfoProviderImpl.cpp
 )
