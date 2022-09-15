@@ -29,6 +29,7 @@
 #include <platform/Ameba/AmebaConfig.h>
 #include <platform/Ameba/AmebaUtils.h>
 #include <platform/Ameba/ConfigurationManagerImpl.h>
+#include "Lev_Matter_Port.h"
 
 using namespace ::chip::DeviceLayer::Internal;
 using chip::DeviceLayer::Internal::DeviceNetworkInfo;
@@ -54,6 +55,7 @@ CHIP_ERROR AmebaUtils::IsStationEnabled(bool & staEnabled)
 
 bool AmebaUtils::IsStationProvisioned(void)
 {
+    printf ("RYAN TEST IsStationProvisioned\n");
     rtw_wifi_config_t WiFiConfig = { 0 };
     return ((GetWiFiConfig(&WiFiConfig) == CHIP_NO_ERROR) && (WiFiConfig.ssid[0] != 0));
 }
@@ -77,13 +79,26 @@ CHIP_ERROR AmebaUtils::SetWiFiConfig(rtw_wifi_config_t * config)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     /* Store Wi-Fi Configurations in Storage */
+    printf ("RYAN TEST SetWiFiConfig\n");
+    /*
     err = PersistedStorage::KeyValueStoreMgr().Put(kWiFiSSIDKeyName, config->ssid, sizeof(config->ssid));
     SuccessOrExit(err);
 
     err = PersistedStorage::KeyValueStoreMgr().Put(kWiFiCredentialsKeyName, config->password, sizeof(config->password));
     SuccessOrExit(err);
+    */
 
-exit:
+   lev_wifi_configuration_t Configuration;
+   memcpy(Configuration.ssid, config->ssid,32);
+   Configuration.ssidLen = config->ssid_len;
+   memcpy(Configuration.passphrase, config->password,128+1);
+   Configuration.passphraseLen = config->password_len;
+   Configuration.boot_mode = config->boot_mode;
+   Configuration.security_type = config->security_type;
+   Configuration.channel = config->channel;
+   
+   lev_wifi_save_configuration(&Configuration);
+
     return err;
 }
 
@@ -92,8 +107,9 @@ CHIP_ERROR AmebaUtils::GetWiFiConfig(rtw_wifi_config_t * config)
     CHIP_ERROR err        = CHIP_NO_ERROR;
     size_t ssidLen        = 0;
     size_t credentialsLen = 0;
-
-    /* Retrieve Wi-Fi Configurations from Storage */
+printf ("RYAN TEST GetWiFiConfig\n");
+/*
+    // Retrieve Wi-Fi Configurations from Storage 
     err = PersistedStorage::KeyValueStoreMgr().Get(kWiFiSSIDKeyName, config->ssid, sizeof(config->ssid), &ssidLen);
     SuccessOrExit(err);
 
@@ -103,8 +119,19 @@ CHIP_ERROR AmebaUtils::GetWiFiConfig(rtw_wifi_config_t * config)
 
     config->ssid_len     = ssidLen;
     config->password_len = credentialsLen;
+    */
+   
+    lev_wifi_configuration_t Configuration;
+    lev_wifi_load_configuration(&Configuration);
+    memcpy(config->ssid, Configuration.ssid, 32);
+    config->ssid_len = Configuration.ssidLen;
+    memcpy(config->password, Configuration.passphrase,128+1);
+    config->password_len = Configuration.passphraseLen;
+    // The next properties may be invalid if read from a v1.X.X device that was upgraded to v2.X.X, but dont think it matters
+    config->boot_mode = Configuration.boot_mode;
+    config->security_type = Configuration.security_type;
+    config->channel = Configuration.channel;   
 
-exit:
     return err;
 }
 

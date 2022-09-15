@@ -51,6 +51,7 @@
 
 #include <app/util/basic-types.h>
 
+
 /** @brief On/off Cluster Server Post Init
  *
  * Following resolution of the On/Off state at startup for this endpoint, perform any
@@ -59,3 +60,24 @@
  * @param endpoint Endpoint that is being initialized  Ver.: always
  */
 void emberAfPluginLevelControlClusterServerPostInitCallback(chip::EndpointId endpoint);
+
+//LEV-MOD
+
+using namespace chip;
+
+typedef struct 
+{
+    CommandId commandId;
+    bool increasing;
+    uint8_t moveToLevel;
+    uint8_t onLevel;
+    uint8_t minLevel;
+    uint8_t maxLevel;
+    bool Active_Command;
+} Lev_Dimming_State_t;
+
+
+Lev_Dimming_State_t Lev_Get_Dimming_State (void); // LEV-MOD
+void Lev_moveToLevelHandler(EndpointId endpoint, CommandId commandId, uint8_t level, uint16_t transitionTimeDs,uint8_t optionMask, uint8_t optionOverride, uint16_t storedLevel); // LEV-MOD
+void Lev_moveHandler(CommandId commandId, uint8_t moveMode, uint8_t rate, uint8_t optionMask, uint8_t optionOverride); // LEV-MOD
+void Lev_stopHandler(CommandId commandId, uint8_t optionMask, uint8_t optionOverride); // LEV-MOD

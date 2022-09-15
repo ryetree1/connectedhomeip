@@ -51,6 +51,11 @@
 #include <app/clusters/scenes/scenes.h>
 #endif // EMBER_AF_PLUGIN_SCENES
 
+#include "Lev_Matter_Config.h"  // LEV-MOD
+#ifdef USE_APP_LEVEL_PROCESSING
+    #include "Lev_Matter_Level_Processing.h"    // LEV-MOD
+#endif
+
 using namespace chip;
 using namespace chip::app::Clusters;
 using namespace chip::app::Clusters::OnOff;
@@ -164,7 +169,9 @@ EmberAfStatus OnOffServer::setOnOffValue(chip::EndpointId endpoint, uint8_t comm
 
             Attributes::GlobalSceneControl::Set(endpoint, true);
         }
-
+#ifdef USE_APP_LEVEL_PROCESSING // LEV-MOD
+        status = (EmberAfStatus) Lev_Matter_Parse_On_Off_Command(LEV_LEVEL_COMMAND_ON);
+#else
         // write the new on/off value
         status = Attributes::OnOff::Set(endpoint, newValue);
         if (status != EMBER_ZCL_STATUS_SUCCESS)
@@ -180,6 +187,7 @@ EmberAfStatus OnOffServer::setOnOffValue(chip::EndpointId endpoint, uint8_t comm
         {
             emberAfOnOffClusterLevelControlEffectCallback(endpoint, newValue);
         }
+#endif
 #endif
 #ifdef EMBER_AF_PLUGIN_MODE_SELECT
         // If OnMode is not a null value, then change the current mode to it.
@@ -202,7 +210,9 @@ EmberAfStatus OnOffServer::setOnOffValue(chip::EndpointId endpoint, uint8_t comm
             emberAfOnOffClusterPrintln("Off Command - OnTime :  0");
             Attributes::OnTime::Set(endpoint, 0); // Reset onTime
         }
-
+#ifdef USE_APP_LEVEL_PROCESSING // LEV-MOD
+        status = (EmberAfStatus) Lev_Matter_Parse_On_Off_Command(LEV_LEVEL_COMMAND_OFF);
+#else
 #ifdef EMBER_AF_PLUGIN_LEVEL_CONTROL
         // If initiatedByLevelChange is false, then we assume that the level change
         // ZCL stuff has not happened and we do it here
@@ -219,6 +229,7 @@ EmberAfStatus OnOffServer::setOnOffValue(chip::EndpointId endpoint, uint8_t comm
             emberAfOnOffClusterPrintln("ERR: writing on/off %x", status);
             return status;
         }
+#endif
     }
 
 #ifdef EMBER_AF_PLUGIN_SCENES

@@ -23,6 +23,7 @@
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/CommissionableDataProvider.h>
 #include <platform/DeviceControlServer.h>
+#include "Lev_Matter_Port.h"    // LEV-MOD
 
 using namespace chip::app::Clusters;
 using namespace chip::System::Clock;
@@ -343,6 +344,7 @@ void CommissioningWindowManager::CloseCommissioningWindow()
         }
 #endif
         ChipLogProgress(AppServer, "Closing pairing window");
+        Matter_Enter_Configuration_Mode (false); // LEV-MOD
         Cleanup();
     }
 }

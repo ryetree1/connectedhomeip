@@ -25,7 +25,7 @@ static_library("Ameba") {
     "AmebaConfig.h",
     "AmebaUtils.cpp",
     "AmebaUtils.h",
-    "BLEManagerImpl.cpp",
+    "../../../../../../../../Leviton/Matter/Bluetooth/BLEManagerImpl.cpp",
     "BLEManagerImpl.h",
     "CHIPDevicePlatformConfig.h",
     "CHIPDevicePlatformEvent.h",
@@ -37,8 +37,8 @@ static_library("Ameba") {
     "DeviceNetworkProvisioningDelegateImpl.h",
     "DiagnosticDataProviderImpl.cpp",
     "DiagnosticDataProviderImpl.h",
-    "FactoryDataProvider.cpp",
-    "FactoryDataProvider.h",
+    "../../../../../../../../Leviton/Matter/FactoryDataProvider.cpp",
+    "../../../../../../../../Leviton/Matter/include/FactoryDataProvider.h",
     "KeyValueStoreManagerImpl.cpp",
     "KeyValueStoreManagerImpl.h",
     "Logging.cpp",
@@ -66,8 +66,10 @@ static_library("Ameba") {
 
   if (chip_enable_ota_requestor) {
     sources += [
-      "AmebaOTAImageProcessor.cpp",
-      "AmebaOTAImageProcessor.h",
+      #"AmebaOTAImageProcessor.cpp",  LEV-MOD
+      #"AmebaOTAImageProcessor.h",  LEV-MOD
+      "../../../../../../../../Leviton/Matter/OTA/AmebaOTAImageProcessor.cpp",
+      "../../../../../../../../Leviton/Matter/OTA/AmebaOTAImageProcessor.h",
     ]
   }
 }

@@ -39,7 +39,7 @@ CHIP_ERROR AmebaWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChan
     mpScanCallback         = nullptr;
     mpConnectCallback      = nullptr;
     mpStatusChangeCallback = networkStatusChangeCallback;
-
+    printf ("RYAN TEST AmebaWiFiDriver::Init\n");
     rtw_wifi_config_t config = { 0 };
     err                      = chip::DeviceLayer::Internal::AmebaUtils::GetWiFiConfig(&config);
     if (err == CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND)

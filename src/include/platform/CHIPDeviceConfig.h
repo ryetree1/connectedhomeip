@@ -140,7 +140,7 @@
  * Human readable vendor name for the organization responsible for producing the device.
  */
 #ifndef CHIP_DEVICE_CONFIG_DEVICE_VENDOR_NAME
-#define CHIP_DEVICE_CONFIG_DEVICE_VENDOR_NAME "TEST_VENDOR"
+#define CHIP_DEVICE_CONFIG_DEVICE_VENDOR_NAME "Leviton"
 #endif
 
 /**
@@ -154,7 +154,7 @@
  * (see src/credentials/examples/DeviceAttestationCredsExample.cpp).
  */
 #ifndef CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID
-#define CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID 0xFFF1
+#define CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID 0x109B
 #endif
 
 /**
@@ -163,7 +163,7 @@
  * Human readable name of the device model.
  */
 #ifndef CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_NAME
-#define CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_NAME "TEST_PRODUCT"
+#define CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_NAME "D26HD"
 #endif
 
 /**
@@ -177,7 +177,7 @@
  * (see src/credentials/examples/DeviceAttestationCredsExample.cpp)
  */
 #ifndef CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID
-#define CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID 0x8001
+#define CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID 0x1000
 #endif
 
 /**

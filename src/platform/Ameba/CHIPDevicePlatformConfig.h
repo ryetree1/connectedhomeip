@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include "Lev_Matter_Config.h"
+
 // ==================== Platform Adaptations ====================
 #define CHIP_DEVICE_CONFIG_ENABLE_WIFI_STATION 0
 #define CHIP_DEVICE_CONFIG_ENABLE_WIFI_AP 0

@@ -50,6 +50,7 @@
 #include <system/SystemPacketBuffer.h>
 #include <system/TLVPacketBufferBackingStore.h>
 #include <transport/SessionManager.h>
+#include "Lev_Matter_Port.h"    // LEV-MOD
 
 #if defined(CHIP_SUPPORT_ENABLE_STORAGE_API_AUDIT) || defined(CHIP_SUPPORT_ENABLE_STORAGE_LOAD_TEST_AUDIT)
 #include <lib/support/PersistentStorageAudit.h>
@@ -271,7 +272,11 @@ CHIP_ERROR Server::Init(const ServerInitParams & initParams)
     else
     {
 #if CHIP_DEVICE_CONFIG_ENABLE_PAIRING_AUTOSTART
-        SuccessOrExit(err = mCommissioningWindowManager.OpenBasicCommissioningWindow());
+        GetFabricTable().DeleteAllFabrics();
+        if (lev_wifi_valid_wifi_info() == false)    // LEV-MOD 
+        {
+            SuccessOrExit(err = mCommissioningWindowManager.OpenBasicCommissioningWindow());
+        }
 #endif
     }
 
