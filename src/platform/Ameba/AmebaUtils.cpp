@@ -55,7 +55,6 @@ CHIP_ERROR AmebaUtils::IsStationEnabled(bool & staEnabled)
 
 bool AmebaUtils::IsStationProvisioned(void)
 {
-    printf ("RYAN TEST IsStationProvisioned\n");
     rtw_wifi_config_t WiFiConfig = { 0 };
     return ((GetWiFiConfig(&WiFiConfig) == CHIP_NO_ERROR) && (WiFiConfig.ssid[0] != 0));
 }
@@ -79,7 +78,6 @@ CHIP_ERROR AmebaUtils::SetWiFiConfig(rtw_wifi_config_t * config)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     /* Store Wi-Fi Configurations in Storage */
-    printf ("RYAN TEST SetWiFiConfig\n");
     /*
     err = PersistedStorage::KeyValueStoreMgr().Put(kWiFiSSIDKeyName, config->ssid, sizeof(config->ssid));
     SuccessOrExit(err);
@@ -107,7 +105,6 @@ CHIP_ERROR AmebaUtils::GetWiFiConfig(rtw_wifi_config_t * config)
     CHIP_ERROR err        = CHIP_NO_ERROR;
     size_t ssidLen        = 0;
     size_t credentialsLen = 0;
-printf ("RYAN TEST GetWiFiConfig\n");
 /*
     // Retrieve Wi-Fi Configurations from Storage 
     err = PersistedStorage::KeyValueStoreMgr().Get(kWiFiSSIDKeyName, config->ssid, sizeof(config->ssid), &ssidLen);
