@@ -593,10 +593,17 @@ static EmberAfStatus moveToLevelHandler(EndpointId endpoint, CommandId commandId
         return EMBER_ZCL_STATUS_SUCCESS;
     }
 
+	uint16_t Tx_Time;
+
+	if (transitionTimeDs.IsNull())
+		Tx_Time = 0xFFFF;
+	else
+		Tx_Time = transitionTimeDs.Value();
+
     if (commandId == Commands::MoveToLevel::Id)
-        status = (EmberAfStatus) Lev_Matter_Parse_Move_To_Level_Command(LEV_LEVEL_COMMAND_MOVE_TO_LEVEL,level, transitionTimeDs.Value(),optionsMask, optionsOverride,storedLevel);
+        status = (EmberAfStatus) Lev_Matter_Parse_Move_To_Level_Command(LEV_LEVEL_COMMAND_MOVE_TO_LEVEL,level, Tx_Time,optionsMask, optionsOverride,storedLevel);
     else    
-        status = (EmberAfStatus) Lev_Matter_Parse_Move_To_Level_Command(LEV_LEVEL_COMMAND_MOVE_TO_LEVEL_WITH_ON_OFF,level, transitionTimeDs.Value(),optionsMask, optionsOverride,storedLevel);
+        status = (EmberAfStatus) Lev_Matter_Parse_Move_To_Level_Command(LEV_LEVEL_COMMAND_MOVE_TO_LEVEL_WITH_ON_OFF,level, Tx_Time,optionsMask, optionsOverride,storedLevel);
 #else
     EmberAfLevelControlState * state = getState(endpoint);
     EmberAfStatus status;
