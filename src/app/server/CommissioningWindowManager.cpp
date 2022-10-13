@@ -344,7 +344,6 @@ void CommissioningWindowManager::CloseCommissioningWindow()
         }
 #endif
         ChipLogProgress(AppServer, "Closing pairing window");
-        Matter_Enter_Configuration_Mode (false); // LEV-MOD
         Cleanup();
     }
 }
