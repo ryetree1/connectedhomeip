@@ -135,7 +135,7 @@ void InitBindingHandlerInternal(intptr_t arg)
     chip::BindingManager::GetInstance().RegisterBoundDeviceChangedHandler(LightSwitchChangedHandler);
 }
 
-#ifdef CONFIG_ENABLE_CHIP_SHELL
+#if CONFIG_ENABLE_CHIP_SHELL
 
 /********************************************************
  * Switch shell functions

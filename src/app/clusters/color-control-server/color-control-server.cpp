@@ -184,6 +184,11 @@ void ColorControlServer::handleModeSwitch(EndpointId endpoint, uint8_t newColorM
     }
 
     Attributes::EnhancedColorMode::Set(endpoint, newColorMode);
+    if (newColorMode == ColorControlServer::ColorMode::COLOR_MODE_EHSV)
+    {
+        // Transpose COLOR_MODE_EHSV to COLOR_MODE_HSV after setting EnhancedColorMode
+        newColorMode = ColorControlServer::ColorMode::COLOR_MODE_HSV;
+    }
     Attributes::ColorMode::Set(endpoint, newColorMode);
 
     colorModeTransition = static_cast<uint8_t>((newColorMode << 4) + oldColorMode);
@@ -796,7 +801,14 @@ bool ColorControlServer::moveHueCommand(EndpointId endpoint, uint8_t moveMode, u
     }
 
     // Handle color mode transition, if necessary.
-    handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    if (isEnhanced)
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_EHSV);
+    }
+    else
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    }
 
     // now, kick off the state machine.
     initHueSat(endpoint, colorHueTransitionState, colorSaturationTransitionState);
@@ -963,7 +975,14 @@ bool ColorControlServer::moveToHueCommand(EndpointId endpoint, uint16_t hue, uin
     stopAllColorTransitions(endpoint);
 
     // Handle color mode transition, if necessary.
-    handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    if (isEnhanced)
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_EHSV);
+    }
+    else
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    }
 
     // now, kick off the state machine.
     initHueSat(endpoint, colorHueTransitionState, colorSaturationTransitionState);
@@ -1077,7 +1096,14 @@ bool ColorControlServer::moveToHueAndSaturationCommand(EndpointId endpoint, uint
     stopAllColorTransitions(endpoint);
 
     // Handle color mode transition, if necessary.
-    handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    if (isEnhanced)
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_EHSV);
+    }
+    else
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    }
 
     // now, kick off the state machine.
     initHueSat(endpoint, colorHueTransitionState, colorSaturationTransitionState);
@@ -1167,7 +1193,14 @@ bool ColorControlServer::stepHueCommand(EndpointId endpoint, uint8_t stepMode, u
     }
 
     // Handle color mode transition, if necessary.
-    handleModeSwitch(endpoint, COLOR_MODE_HSV);
+    if (isEnhanced)
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_EHSV);
+    }
+    else
+    {
+        handleModeSwitch(endpoint, ColorControlServer::ColorMode::COLOR_MODE_HSV);
+    }
 
     // now, kick off the state machine.
     initHueSat(endpoint, colorHueTransitionState, colorSaturationTransitionState);
@@ -2076,12 +2109,12 @@ void ColorControlServer::startUpColorTempCommand(EndpointId endpoint)
     // 07-5123-07 (i.e. ZCL 7) 5.2.2.2.1.22 StartUpColorTemperatureMireds Attribute
     // The StartUpColorTemperatureMireds attribute SHALL define the desired startup color
     // temperature values a lamp SHAL use when it is supplied with power and this value SHALL
-    // be reflected in the ColorTemperatureMireds attribute. In addition, the ColorMode and
+    // be reflected in the ColorTemperature attribute. In addition, the ColorMode and
     // EnhancedColorMode attributes SHALL be set to 0x02 (color temperature). The values of
     // the StartUpColorTemperatureMireds attribute are listed in the table below.
     // Value                Action on power up
-    // 0x0000-0xffef        Set the ColorTemperatureMireds attribute to this value.
-    // null                 Set the ColorTemperatureMireds attribute to its previous value.
+    // 0x0000-0xffef        Set the ColorTemperature attribute to this value.
+    // null                 Set the ColorTemperature attribute to its previous value.
 
     // Initialize startUpColorTempMireds to "maintain previous value" value null
     app::DataModel::Nullable<uint16_t> startUpColorTemp;
@@ -2396,17 +2429,17 @@ void ColorControlServer::levelControlColorTempChangeCommand(EndpointId endpoint)
     // If the CoupleColorTempToLevel bit of the Options attribute of the Level
     // Control cluster is equal to 1 and the ColorMode or EnhancedColorMode
     // attribute is set to 0x02 (color temperature) then a change in the
-    // CurrentLevel attribute SHALL affect the ColorTemperatureMireds attribute.
+    // CurrentLevel attribute SHALL affect the ColorTemperature attribute.
     // This relationship is manufacturer specific, with the qualification that
     // the maximum value of the CurrentLevel attribute SHALL correspond to a
     // ColorTemperatureMired attribute value equal to the
     // CoupleColorTempToLevelMinMireds attribute. This relationship is one-way so
-    // a change to the ColorTemperatureMireds attribute SHALL NOT have any effect
+    // a change to the ColorTemperature attribute SHALL NOT have any effect
     // on the CurrentLevel attribute.
     //
     // In order to simulate the behavior of an incandescent bulb, a low value of
     // the CurrentLevel attribute SHALL be associated with a high value of the
-    // ColorTemperatureMireds attribute (i.e., a low value of color temperature
+    // ColorTemperature attribute (i.e., a low value of color temperature
     // in kelvins).
     //
     // If the CoupleColorTempToLevel bit of the Options attribute of the Level
