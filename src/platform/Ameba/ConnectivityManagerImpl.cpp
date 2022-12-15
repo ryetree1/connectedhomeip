@@ -52,6 +52,7 @@
 
 #include <chip_porting.h>
 #include <lwip_netconf.h>
+#include "Lev_Matter_Port.h" // LEV-MOD
 
 using namespace ::chip;
 using namespace ::chip::Inet;
@@ -542,9 +543,10 @@ void ConnectivityManagerImpl::DriveStationState()
                 if (err != CHIP_NO_ERROR)
                 {
                     ChipLogError(DeviceLayer, "WiFiConnect() failed: %s", chip::ErrorStr(err));
+					Lev_Report_Matter_Error(MATTER_ENROLL_ERROR_WIFI_FAILED_TO_JOIN);	// LEV-MOD
                 }
                 SuccessOrExit(err);
-
+				Lev_Set_Matter_Enrollment_State(MATTER_ENROLL_STATE_JOINED_WIFI);
                 ChangeWiFiStationState(kWiFiStationState_Connecting);
             }
 

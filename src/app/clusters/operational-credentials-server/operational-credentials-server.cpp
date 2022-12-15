@@ -50,6 +50,7 @@
 #include <platform/CHIPDeviceLayer.h>
 #include <string.h>
 #include <trace/trace.h>
+#include "Lev_Matter_Port.h"	// LEV-MOD
 
 using namespace chip;
 using namespace ::chip::Transport;
@@ -1177,6 +1178,7 @@ bool emberAfOperationalCredentialsClusterAddTrustedRootCertificateCallback(
 
     // Got here, so we succeeded, mark AddTrustedRootCert has having been invoked.
     ChipLogProgress(Zcl, "OpCreds: AddTrustedRootCertificate successful.");
+	Lev_Set_Matter_Enrollment_State(MATTER_ENROLL_STATE_ATTESTATION_PASSED);	// LEV-MOD
     finalStatus = Status::Success;
     failSafeContext.SetAddTrustedRootCertInvoked();
 
