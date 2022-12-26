@@ -539,14 +539,15 @@ void ConnectivityManagerImpl::DriveStationState()
                 now >= mLastStationConnectFailTime + mWiFiStationReconnectInterval)
             {
                 ChipLogProgress(DeviceLayer, "Attempting to connect WiFi station interface");
+				Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECTING); // LEV-MOD
                 err = Internal::AmebaUtils::WiFiConnect();
                 if (err != CHIP_NO_ERROR)
                 {
                     ChipLogError(DeviceLayer, "WiFiConnect() failed: %s", chip::ErrorStr(err));
-					Lev_Report_Matter_Error(MATTER_ENROLL_ERROR_WIFI_FAILED_TO_JOIN);	// LEV-MOD
+					Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECT_FAILED); // LEV-MOD
                 }
                 SuccessOrExit(err);
-				Lev_Set_Matter_Enrollment_State(MATTER_ENROLL_STATE_JOINED_WIFI);
+				Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECTED); // LEV-MOD
                 ChangeWiFiStationState(kWiFiStationState_Connecting);
             }
 
@@ -576,6 +577,7 @@ void ConnectivityManagerImpl::OnStationConnected()
     ChipDeviceEvent event;
     event.Type                          = DeviceEventType::kWiFiConnectivityChange;
     event.WiFiConnectivityChange.Result = kConnectivity_Established;
+	printf("OnStationConnected\n");
     PlatformMgr().PostEventOrDie(&event);
     WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
 
@@ -594,6 +596,7 @@ void ConnectivityManagerImpl::OnStationDisconnected()
     ChipDeviceEvent event;
     event.Type                          = DeviceEventType::kWiFiConnectivityChange;
     event.WiFiConnectivityChange.Result = kConnectivity_Lost;
+	printf("OnStationDisconnected\n");
     PlatformMgr().PostEventOrDie(&event);
     WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
     uint16_t reason                    = NetworkCommissioning::AmebaWiFiDriver::GetInstance().GetLastDisconnectReason();
@@ -736,7 +739,7 @@ void ConnectivityManagerImpl::UpdateInternetConnectivityState(void)
         event.InternetConnectivityChange.IPv4      = GetConnectivityChange(hadIPv4Conn, haveIPv4Conn);
         event.InternetConnectivityChange.IPv6      = GetConnectivityChange(hadIPv6Conn, haveIPv6Conn);
         event.InternetConnectivityChange.ipAddress = addr;
-
+		printf("UpdateInternetConnectivityState\n");
         PlatformMgr().PostEventOrDie(&event);
 
         if (haveIPv4Conn != hadIPv4Conn)
@@ -771,6 +774,7 @@ void ConnectivityManagerImpl::OnStationIPv4AddressAvailable(void)
     ChipDeviceEvent event;
     event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
     event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV4_Assigned;
+	printf("OnStationIPv4AddressAvailable\n");
     PlatformMgr().PostEventOrDie(&event);
 }
 
@@ -785,6 +789,7 @@ void ConnectivityManagerImpl::OnStationIPv4AddressLost(void)
     ChipDeviceEvent event;
     event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
     event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV4_Lost;
+	printf("OnStationIPv4AddressLost\n");
     PlatformMgr().PostEventOrDie(&event);
 }
 
@@ -830,6 +835,7 @@ void ConnectivityManagerImpl::RtkWiFiStationConnectedHandler(char * buf, int buf
     ChipDeviceEvent event;
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiStationConnectedEvent;
+	printf("RtkWiFiStationConnectedHandler\n");
     PlatformMgr().PostEventOrDie(&event);
 }
 
@@ -838,6 +844,7 @@ void ConnectivityManagerImpl::RtkWiFiStationDisconnectedHandler(char * buf, int 
     ChipDeviceEvent event;
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiStationDisconnectedEvent;
+	printf("RtkWiFiStationDisconnectedHandler\n");
     PlatformMgr().PostEventOrDie(&event);
 }
 
@@ -846,6 +853,7 @@ void ConnectivityManagerImpl::RtkWiFiScanCompletedHandler(void)
     ChipDeviceEvent event;
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiScanCompletedEvent;
+	printf("RtkWiFiScanCompletedHandler");
     PlatformMgr().PostEventOrDie(&event);
 }
 
