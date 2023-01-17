@@ -859,8 +859,10 @@ void ConnectivityManagerImpl::RtkWiFiScanCompletedHandler(void)
 
 void ConnectivityManagerImpl::DHCPProcessThread(void * param)
 {
-    LwIP_DHCP(0, DHCP_START);
-	Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_DHCP_FINISHED);	// LEV-MOD
+    if (LwIP_DHCP(0, DHCP_START) ==  DHCP_TIMEOUT)
+		Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_DHCP_TIMEOUT);	// LEV-MOD
+	else
+		Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_DHCP_FINISHED);	// LEV-MOD
     PlatformMgr().LockChipStack();
     sInstance.OnStationIPv4AddressAvailable();
     PlatformMgr().UnlockChipStack();
