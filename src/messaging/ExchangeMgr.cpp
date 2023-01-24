@@ -199,11 +199,7 @@ void ExchangeManager::OnMessageReceived(const PacketHeader & packetHeader, const
                     packetHeader.GetMessageCounter(), ChipLogValueExchangeIdFromReceivedHeader(payloadHeader));
 
     // LEV-MOD
-    Lev_Matter_Exchange_Manager_Message_Received(
-        packetHeader.GetMessageCounter(),
-        payloadHeader.GetMessageType(),
-        isDuplicate == DuplicateMessage::Yes
-    );
+    Lev_Matter_Heartbeat_Tick();
 
     MessageFlags msgFlags;
     if (isDuplicate == DuplicateMessage::Yes)
