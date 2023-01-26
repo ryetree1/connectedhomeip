@@ -42,6 +42,7 @@
 #include <messaging/ExchangeContext.h>
 #include <messaging/ExchangeMgr.h>
 #include <protocols/Protocols.h>
+#include "Lev_Matter_Port.h" // LEV-MOD
 
 using namespace chip::Encoding;
 using namespace chip::Inet;
@@ -196,6 +197,9 @@ void ExchangeManager::OnMessageReceived(const PacketHeader & packetHeader, const
                     " and MessageCounter:" ChipLogFormatMessageCounter " on exchange " ChipLogFormatExchangeId,
                     payloadHeader.GetMessageType(), ChipLogValueProtocolId(payloadHeader.GetProtocolID()),
                     packetHeader.GetMessageCounter(), ChipLogValueExchangeIdFromReceivedHeader(payloadHeader));
+
+    // LEV-MOD
+    Lev_Matter_Heartbeat_Tick();
 
     MessageFlags msgFlags;
     if (isDuplicate == DuplicateMessage::Yes)
