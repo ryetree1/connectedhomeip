@@ -39,6 +39,7 @@
 #include <system/TimeSource.h>
 
 #include <app/server/Server.h>
+#include "Lev_Matter_Port.h"
 
 namespace chip {
 namespace app {
@@ -234,13 +235,12 @@ CHIP_ERROR DnssdServer::Advertise(bool commissionableNode, chip::Dnssd::Commissi
 
     advertiseParameters.SetShortDiscriminator(static_cast<uint8_t>((discriminator >> 8) & 0x0F))
         .SetLongDiscriminator(discriminator);
-
-    if (DeviceLayer::ConfigurationMgr().IsCommissionableDeviceTypeEnabled() &&
-        DeviceLayer::ConfigurationMgr().GetDeviceTypeId(val32) == CHIP_NO_ERROR)
+    if (DeviceLayer::ConfigurationMgr().IsCommissionableDeviceTypeEnabled() )//&&
+        //DeviceLayer::ConfigurationMgr().GetDeviceTypeId(val32) == CHIP_NO_ERROR) // LEV-MOD
     {
-        advertiseParameters.SetDeviceType(chip::Optional<uint32_t>::Value(val32));
+		val32 = Lev_Get_Device_Type();	// LEV-MOD
+		advertiseParameters.SetDeviceType(chip::Optional<uint32_t>::Value(val32));
     }
-
     char deviceName[chip::Dnssd::kKeyDeviceNameMaxLength + 1];
     if (DeviceLayer::ConfigurationMgr().IsCommissionableDeviceNameEnabled() &&
         DeviceLayer::ConfigurationMgr().GetCommissionableDeviceName(deviceName, sizeof(deviceName)) == CHIP_NO_ERROR)
