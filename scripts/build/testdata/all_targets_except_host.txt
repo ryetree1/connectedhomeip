@@ -17,7 +17,14 @@ android-x64-chip-tool
 android-x64-tv-server
 android-x86-chip-tool
 android-x86-tv-server
-bl602-light
+bouffalolab-bl602-iot-matter-v1-light
+bouffalolab-bl602-iot-matter-v1-light-115200
+bouffalolab-bl602-iot-matter-v1-light-rpc
+bouffalolab-bl602-night-light-light
+bouffalolab-bl706-night-light-light
+bouffalolab-xt-zb6-devkit-light
+bouffalolab-xt-zb6-devkit-light-115200
+bouffalolab-xt-zb6-devkit-light-rpc
 cc13x2x7_26x2x7-all-clusters
 cc13x2x7_26x2x7-all-clusters-minimal
 cc13x2x7_26x2x7-lock-ftd
@@ -149,6 +156,7 @@ esp32-devkitc-all-clusters-minimal
 esp32-devkitc-all-clusters-minimal-ipv6only
 esp32-devkitc-bridge
 esp32-devkitc-light
+esp32-devkitc-light-rpc
 esp32-devkitc-lock
 esp32-devkitc-ota-requestor
 esp32-devkitc-ota-requestor-rpc
@@ -166,6 +174,7 @@ esp32-m5stack-all-clusters-rpc-ipv6only
 esp32-m5stack-ota-requestor
 esp32-m5stack-ota-requestor-rpc
 esp32-qemu-tests
+genio-lighting-app
 imx-all-clusters-app
 imx-all-clusters-app-release
 imx-all-clusters-minimal-app
@@ -178,22 +187,24 @@ imx-ota-provider-app
 imx-ota-provider-app-release
 imx-thermostat
 imx-thermostat-release
-infineon-p6-all-clusters
-infineon-p6-all-clusters-minimal
-infineon-p6-all-clusters-minimal-ota (NOGLOB: Reduce default build variants)
-infineon-p6-all-clusters-minimal-ota-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-all-clusters-minimal-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-all-clusters-ota (NOGLOB: Reduce default build variants)
-infineon-p6-all-clusters-ota-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-all-clusters-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-light
-infineon-p6-light-ota (NOGLOB: Reduce default build variants)
-infineon-p6-light-ota-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-light-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-lock
-infineon-p6-lock-ota (NOGLOB: Reduce default build variants)
-infineon-p6-lock-ota-updateimage (NOGLOB: Reduce default build variants)
-infineon-p6-lock-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-all-clusters
+infineon-psoc6-all-clusters-minimal
+infineon-psoc6-all-clusters-minimal-ota (NOGLOB: Reduce default build variants)
+infineon-psoc6-all-clusters-minimal-ota-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-all-clusters-minimal-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-all-clusters-ota (NOGLOB: Reduce default build variants)
+infineon-psoc6-all-clusters-ota-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-all-clusters-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-light
+infineon-psoc6-light-ota (NOGLOB: Reduce default build variants)
+infineon-psoc6-light-ota-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-light-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-lock
+infineon-psoc6-lock-ota (NOGLOB: Reduce default build variants)
+infineon-psoc6-lock-ota-updateimage (NOGLOB: Reduce default build variants)
+infineon-psoc6-lock-updateimage (NOGLOB: Reduce default build variants)
+k32w-contact-low-power-release (NOGLOB: Only on demand build)
+k32w-contact-release
 k32w-light-ota-se (NOGLOB: Only on demand build)
 k32w-light-release-no-ota
 k32w-lock-low-power-release (NOGLOB: Only on demand build)
@@ -242,8 +253,13 @@ qpg-light
 qpg-lock
 qpg-persistent-storage
 qpg-shell
+telink-tlsr9518adk80d-all-clusters
+telink-tlsr9518adk80d-all-clusters-minimal
+telink-tlsr9518adk80d-contact-sensor
 telink-tlsr9518adk80d-light
 telink-tlsr9518adk80d-light-switch
+telink-tlsr9518adk80d-ota-requestor
+telink-tlsr9518adk80d-thermostat
 tizen-arm-all-clusters
 tizen-arm-all-clusters-asan (NOGLOB: Reduce default build variants)
 tizen-arm-all-clusters-minimal

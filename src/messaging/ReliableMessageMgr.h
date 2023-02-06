@@ -182,9 +182,25 @@ public:
      */
     void RegisterSessionUpdateDelegate(SessionUpdateDelegate * sessionUpdateDelegate);
 
+    /**
+     * Map a send error code to the error code we should actually use for
+     * success checks.  This maps some error codes to CHIP_NO_ERROR as
+     * appropriate.
+     */
+    static CHIP_ERROR MapSendError(CHIP_ERROR error, uint16_t exchangeId, bool isInitiator);
+
 #if CHIP_CONFIG_TEST
     // Functions for testing
     int TestGetCountRetransTable();
+
+    // Enumerate the retransmission table.  Clearing an entry while enumerating
+    // that entry is allowed.  F must take a RetransTableEntry as an argument
+    // and return Loop::Continue or Loop::Break.
+    template <typename F>
+    void EnumerateRetransTable(F && functor)
+    {
+        mRetransTable.ForEachActiveObject(std::forward<F>(functor));
+    }
 #endif // CHIP_CONFIG_TEST
 
 private:

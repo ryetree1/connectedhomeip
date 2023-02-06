@@ -51,6 +51,10 @@
 #include <app/clusters/scenes/scenes.h>
 #endif // EMBER_AF_PLUGIN_SCENES
 
+#ifdef EMBER_AF_PLUGIN_LEVEL_CONTROL
+#include <app/clusters/level-control/level-control.h>
+#endif // EMBER_AF_PLUGIN_LEVEL_CONTROL
+
 #include "Lev_Matter_Config.h"  // LEV-MOD
 #ifdef USE_APP_LEVEL_PROCESSING
     #include "Lev_Matter_Level_Processing.h"    // LEV-MOD
@@ -104,6 +108,18 @@ EmberAfStatus OnOffServer::getOnOffValue(chip::EndpointId endpoint, bool * curre
 
     return status;
 }
+
+#ifdef EMBER_AF_PLUGIN_LEVEL_CONTROL
+static bool LevelControlWithOnOffFeaturePresent(EndpointId endpoint)
+{
+    if (!emberAfContainsServer(endpoint, LevelControl::Id))
+    {
+        return false;
+    }
+
+    return LevelControlHasFeature(endpoint, LevelControl::LevelControlFeature::kOnOff);
+}
+#endif // EMBER_AF_PLUGIN_LEVEL_CONTROL
 
 /** @brief On/off Cluster Set Value
  *
@@ -183,7 +199,7 @@ EmberAfStatus OnOffServer::setOnOffValue(chip::EndpointId endpoint, uint8_t comm
 #ifdef EMBER_AF_PLUGIN_LEVEL_CONTROL
         // If initiatedByLevelChange is false, then we assume that the level change
         // ZCL stuff has not happened and we do it here
-        if (!initiatedByLevelChange && emberAfContainsServer(endpoint, LevelControl::Id))
+        if (!initiatedByLevelChange && LevelControlWithOnOffFeaturePresent(endpoint))
         {
             emberAfOnOffClusterLevelControlEffectCallback(endpoint, newValue);
         }
@@ -216,7 +232,7 @@ EmberAfStatus OnOffServer::setOnOffValue(chip::EndpointId endpoint, uint8_t comm
 #ifdef EMBER_AF_PLUGIN_LEVEL_CONTROL
         // If initiatedByLevelChange is false, then we assume that the level change
         // ZCL stuff has not happened and we do it here
-        if (!initiatedByLevelChange && emberAfContainsServer(endpoint, LevelControl::Id))
+        if (!initiatedByLevelChange && LevelControlWithOnOffFeaturePresent(endpoint))
         {
             emberAfOnOffClusterLevelControlEffectCallback(endpoint, newValue);
         }

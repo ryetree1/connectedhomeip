@@ -198,9 +198,7 @@ private:
     enum class ReadHandlerFlags : uint8_t
     {
         // mHoldReport is used to prevent subscription data delivery while we are
-        // waiting for the min reporting interval to elapse.  If we have to send a
-        // report immediately due to an urgent event being queued,
-        // UnblockUrgentEventDelivery can be used to force mHoldReport to false.
+        // waiting for the min reporting interval to elapse.
         HoldReport = (1 << 0),
 
         // mHoldSync is used to prevent subscription empty report delivery while we
@@ -219,7 +217,6 @@ private:
         PrimingReports     = (1 << 3),
         ActiveSubscription = (1 << 4),
         FabricFiltered     = (1 << 5),
-
         // For subscriptions, we record the dirty set generation when we started to generate the last report.
         // The mCurrentReportsBeginGeneration records the generation at the start of the current report.  This only/
         // has a meaningful value while IsReporting() is true.
@@ -227,6 +224,8 @@ private:
         // mPreviousReportsBeginGeneration will be set to mCurrentReportsBeginGeneration after we send the last
         // chunk of the current report.  Anything that was dirty with a generation earlier than
         // mPreviousReportsBeginGeneration has had its value sent to the client.
+        // when receiving initial request, it needs mark current handler as dirty.
+        // when there is urgent event, it needs mark current handler as dirty.
         ForceDirty = (1 << 6),
 
         // Don't need the response for report data if true
@@ -253,6 +252,8 @@ private:
      *  @retval #Others If fails to send report data
      *  @retval #CHIP_NO_ERROR On success.
      *
+     *  If an error is returned, the ReadHandler guarantees that it is not in
+     *  a state where it's waiting for a response.
      */
     CHIP_ERROR SendReportData(System::PacketBufferHandle && aPayload, bool aMoreChunks);
 
@@ -264,6 +265,9 @@ private:
     bool IsIdle() const { return mState == HandlerState::Idle; }
     bool IsReportable() const
     {
+        // Important: Anything that changes the state IsReportable depends on in
+        // a way that causes IsReportable to become true must call ScheduleRun
+        // on the reporting engine.
         return mState == HandlerState::GeneratingReports && !mFlags.Has(ReadHandlerFlags::HoldReport) &&
             (IsDirty() || !mFlags.Has(ReadHandlerFlags::HoldSync));
     }
@@ -300,8 +304,7 @@ private:
     {
         return (mDirtyGeneration > mPreviousReportsBeginGeneration) || mFlags.Has(ReadHandlerFlags::ForceDirty);
     }
-    void ClearDirty() { mFlags.Clear(ReadHandlerFlags::ForceDirty); }
-
+    void ClearForceDirtyFlag() { ClearStateFlag(ReadHandlerFlags::ForceDirty); }
     NodeId GetInitiatorNodeId() const
     {
         auto session = GetSession();
@@ -319,11 +322,7 @@ private:
 
     auto GetTransactionStartGeneration() const { return mTransactionStartGeneration; }
 
-    void UnblockUrgentEventDelivery()
-    {
-        mFlags.Clear(ReadHandlerFlags::HoldReport);
-        mFlags.Set(ReadHandlerFlags::ForceDirty);
-    }
+    void UnblockUrgentEventDelivery();
 
     const AttributeValueEncoder::AttributeEncodeState & GetAttributeEncodeState() const { return mAttributeEncoderState; }
     void SetAttributeEncodeState(const AttributeValueEncoder::AttributeEncodeState & aState) { mAttributeEncoderState = aState; }
@@ -368,7 +367,7 @@ private:
     CHIP_ERROR SendSubscribeResponse();
     CHIP_ERROR ProcessSubscribeRequest(System::PacketBufferHandle && aPayload);
     CHIP_ERROR ProcessReadRequest(System::PacketBufferHandle && aPayload);
-    CHIP_ERROR ProcessAttributePathList(AttributePathIBs::Parser & aAttributePathListParser);
+    CHIP_ERROR ProcessAttributePaths(AttributePathIBs::Parser & aAttributePathListParser);
     CHIP_ERROR ProcessEventPaths(EventPathIBs::Parser & aEventPathsParser);
     CHIP_ERROR ProcessEventFilters(EventFilterIBs::Parser & aEventFiltersParser);
     CHIP_ERROR OnStatusResponse(Messaging::ExchangeContext * apExchangeContext, System::PacketBufferHandle && aPayload,
@@ -379,6 +378,10 @@ private:
     void MoveToState(const HandlerState aTargetState);
 
     const char * GetStateStr() const;
+
+    // Helpers for managing our state flags properly.
+    void SetStateFlag(ReadHandlerFlags aFlag, bool aValue = true);
+    void ClearStateFlag(ReadHandlerFlags aFlag);
 
     AttributePathExpandIterator mAttributePathExpandIterator = AttributePathExpandIterator(nullptr);
 

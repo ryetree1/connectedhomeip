@@ -33,6 +33,9 @@ CONFIG_BT_NIMBLE_ENABLED=y
 #enable lwip ipv6 autoconfig
 CONFIG_LWIP_IPV6_AUTOCONFIG=y
 
+# disable IPV4
+# CONFIG_DISABLE_IPV4 is not set
+
 # Use a custom partition table
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
@@ -47,3 +50,6 @@ CONFIG_STACK_CHECK=y
 # Serial Flasher config
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+
+# Disable softap support by default
+CONFIG_ESP_WIFI_SOFTAP_SUPPORT=n

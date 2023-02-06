@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Project CHIP Authors
+# Copyright (c) 2022 Project CHIP Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,22 +21,47 @@ from .builder import Builder
 
 
 class TelinkApp(Enum):
+    ALL_CLUSTERS = auto()
+    ALL_CLUSTERS_MINIMAL = auto()
+    CONTACT_SENSOR = auto()
     LIGHT = auto()
     SWITCH = auto()
+    OTA_REQUESTOR = auto()
+    THERMOSTAT = auto()
 
     def ExampleName(self):
-        if self == TelinkApp.LIGHT:
+        if self == TelinkApp.ALL_CLUSTERS:
+            return 'all-clusters-app'
+        elif self == TelinkApp.ALL_CLUSTERS_MINIMAL:
+            return 'all-clusters-minimal-app'
+        elif self == TelinkApp.CONTACT_SENSOR:
+            return 'contact-sensor-app'
+        elif self == TelinkApp.LIGHT:
             return 'lighting-app'
         elif self == TelinkApp.SWITCH:
             return 'light-switch-app'
+        elif self == TelinkApp.OTA_REQUESTOR:
+            return 'ota-requestor-app'
+        elif self == TelinkApp.THERMOSTAT:
+            return 'thermostat'
         else:
             raise Exception('Unknown app type: %r' % self)
 
     def AppNamePrefix(self):
-        if self == TelinkApp.LIGHT:
+        if self == TelinkApp.ALL_CLUSTERS:
+            return 'chip-telink-all-clusters-example'
+        elif self == TelinkApp.ALL_CLUSTERS_MINIMAL:
+            return 'chip-telink-all-clusters-minimal-example'
+        elif self == TelinkApp.CONTACT_SENSOR:
+            return 'chip-telink-contact-sensor-example'
+        elif self == TelinkApp.LIGHT:
             return 'chip-telink-lighting-example'
         elif self == TelinkApp.SWITCH:
             return 'chip-telink-light-switch-example'
+        elif self == TelinkApp.OTA_REQUESTOR:
+            return 'chip-telink-ota-requestor-example'
+        elif self == TelinkApp.THERMOSTAT:
+            return 'chip-telink-thermostat-example'
         else:
             raise Exception('Unknown app type: %r' % self)
 
@@ -62,22 +87,26 @@ class TelinkBuilder(Builder):
         self.app = app
         self.board = board
 
-    def generate(self):
-        if os.path.exists(self.output_dir):
-            return
-
+    def get_cmd_prefixes(self):
         if not self._runner.dry_run:
             # Zephyr base
             if 'TELINK_ZEPHYR_BASE' not in os.environ:
                 raise Exception("Telink builds require TELINK_ZEPHYR_BASE")
 
-        cmd = 'export ZEPHYR_BASE="$TELINK_ZEPHYR_BASE"\n'
+        cmd = 'export ZEPHYR_TOOLCHAIN_VARIANT=zephyr\n'
+        cmd += 'export ZEPHYR_BASE="$TELINK_ZEPHYR_BASE"\n'
 
         if 'TELINK_ZEPHYR_SDK_DIR' in os.environ:
             cmd += 'export ZEPHYR_SDK_INSTALL_DIR="$TELINK_ZEPHYR_SDK_DIR"\n'
 
+        return cmd
+
+    def generate(self):
+        if os.path.exists(self.output_dir):
+            return
+
+        cmd = self.get_cmd_prefixes()
         cmd += '''
-export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
 source "$ZEPHYR_BASE/zephyr-env.sh";
 west build --cmake-only -d {outdir} -b {board} {sourcedir}
         '''.format(
@@ -92,8 +121,9 @@ west build --cmake-only -d {outdir} -b {board} {sourcedir}
     def _build(self):
         logging.info('Compiling Telink at %s', self.output_dir)
 
-        self._Execute(['ninja', '-C', self.output_dir],
-                      title='Building ' + self.identifier)
+        cmd = self.get_cmd_prefixes() + ("ninja -C %s" % self.output_dir)
+
+        self._Execute(['bash', '-c', cmd], title='Building ' + self.identifier)
 
     def build_outputs(self):
         return {

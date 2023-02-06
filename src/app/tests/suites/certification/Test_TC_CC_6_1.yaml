@@ -70,7 +70,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               type: int16u
@@ -128,7 +128,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C0a.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: 246
@@ -145,7 +145,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C0a.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: 230
@@ -162,7 +162,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C0a.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: 212
@@ -179,7 +179,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C0a.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           value: 250
 

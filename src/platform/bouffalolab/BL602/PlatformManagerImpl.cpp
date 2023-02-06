@@ -32,8 +32,6 @@
 
 #include <lwip/tcpip.h>
 
-#include "AppConfig.h"
-
 #include <aos/kernel.h>
 #include <aos/yloop.h>
 #include <bl60x_fw_api.h>
@@ -42,6 +40,10 @@
 #include <hal_wifi.h>
 #include <tcpip.h>
 #include <wifi_mgmr_ext.h>
+
+extern "C" {
+#include <bl_sec.h>
+}
 
 namespace chip {
 namespace DeviceLayer {
@@ -63,6 +65,8 @@ static int app_entropy_source(void * data, unsigned char * output, size_t len, s
 
 static void WifiStaDisconect(void)
 {
+    NetworkCommissioning::BLWiFiDriver::GetInstance().SetLastDisconnectReason(NULL);
+
     uint16_t reason = NetworkCommissioning::BLWiFiDriver::GetInstance().GetLastDisconnectReason();
     uint8_t associationFailureCause =
         chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCause::kUnknown);
@@ -134,7 +138,6 @@ static void WifiStaDisconect(void)
             chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::WiFiConnectionStatus::kNotConnected));
     }
 
-    NetworkCommissioning::BLWiFiDriver::GetInstance().SetLastDisconnectReason(NULL);
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Disconnecting);
 }
 
@@ -149,9 +152,9 @@ static void WifiStaConnected(void)
     }
 
     memset(ap_ssid, 0, sizeof(ap_ssid));
-    wifi_mgmr_sta_ssid_get(ap_ssid);
-    wifi_mgmr_ap_item_t * ap_info = mgmr_get_ap_info_handle();
-    wifi_mgmr_get_scan_result_filter(ap_info, ap_ssid);
+    // wifi_mgmr_sta_ssid_get(ap_ssid);
+    // wifi_mgmr_ap_item_t * ap_info = mgmr_get_ap_info_handle();
+    // wifi_mgmr_get_scan_result_filter(ap_info, ap_ssid);
 
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
     ConnectivityMgrImpl().WifiStationStateChange();
@@ -179,12 +182,17 @@ void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
     }
     break;
     case CODE_WIFI_ON_SCAN_DONE: {
+        chip::DeviceLayer::PlatformMgr().LockChipStack();
         NetworkCommissioning::BLWiFiDriver::GetInstance().OnScanWiFiNetworkDone();
+        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_ON_DISCONNECT: {
         log_info("[APP] [EVT] disconnect %lld, Reason: %s\r\n", aos_now_ms(), wifi_mgmr_status_code_str(event->value));
+
+        chip::DeviceLayer::PlatformMgr().LockChipStack();
         WifiStaDisconect();
+        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_CMD_RECONNECT: {
@@ -193,9 +201,17 @@ void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
     break;
     case CODE_WIFI_ON_GOT_IP: {
         log_info("[APP] [EVT] GOT IP %lld\r\n", aos_now_ms());
-        log_info("[SYS] Memory left is %d Bytes\r\n", xPortGetFreeHeapSize());
 
+        chip::DeviceLayer::PlatformMgr().LockChipStack();
         WifiStaConnected();
+        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
+    }
+    break;
+    case CODE_WIFI_ON_GOT_IP6: {
+        log_info("[APP] [EVT] GOT IP6 %lld\r\n", aos_now_ms());
+        chip::DeviceLayer::PlatformMgr().LockChipStack();
+        ConnectivityMgrImpl().OnIPv6AddressAvailable();
+        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     default: {
@@ -209,6 +225,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 {
     CHIP_ERROR err;
     static uint8_t stack_wifi_init = 0;
+    TaskHandle_t backup_eventLoopTask;
 
     // Initialize the configuration system.
     err = Internal::BL602Config::Init();
@@ -233,9 +250,11 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 
     // Call _InitChipStack() on the generic implementation base class
     // to finish the initialization process.
-    err = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_InitChipStack();
+    /** weiyin, backup mEventLoopTask which is reset in _InitChipStack */
+    backup_eventLoopTask = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask;
+    err                  = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_InitChipStack();
     SuccessOrExit(err);
-
+    Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
 exit:
     return err;
 }

@@ -141,7 +141,7 @@ enum AttCertType
     kAttCertType_DAC,              /**< Device Attestation Certificate (DAC). */
 };
 
-struct FutureExtension
+struct FutureExtensionWithNID
 {
     int nid;
     const char * info;
@@ -224,35 +224,42 @@ public:
     bool IsExtensionBasicCritical() { return (!mEnabled || !mFlags.Has(CertErrorFlags::kExtBasicCriticalWrong)); }
     bool IsExtensionBasicCAPresent() { return (!mEnabled || !mFlags.Has(CertErrorFlags::kExtBasicCAMissing)); }
     bool IsExtensionBasicCACorrect() { return (!mEnabled || !mFlags.Has(CertErrorFlags::kExtBasicCAWrong)); }
-    bool IsExtensionBasicPathLenPresent(AttCertType & attCertType)
-    {
-        bool normallyPresent = (attCertType != kAttCertType_DAC);
-        bool testCaseWrong   = (mEnabled && mFlags.Has(CertErrorFlags::kExtBasicPathLenWrong));
-        return (normallyPresent ^ testCaseWrong);
-    }
     int GetExtensionBasicPathLenValue(AttCertType & attCertType)
     {
-        if (mFlags.Has(CertErrorFlags::kExtBasicPathLen0))
+        if (mEnabled && mFlags.Has(CertErrorFlags::kExtBasicPathLen0))
         {
             return 0;
         }
-        if (mFlags.Has(CertErrorFlags::kExtBasicPathLen1))
+        if (mEnabled && mFlags.Has(CertErrorFlags::kExtBasicPathLen1))
         {
             return 1;
         }
-        if (mFlags.Has(CertErrorFlags::kExtBasicPathLen2))
+        if (mEnabled && mFlags.Has(CertErrorFlags::kExtBasicPathLen2))
         {
             return 2;
         }
-        if (attCertType == kAttCertType_PAA)
+        if (mEnabled && mFlags.Has(CertErrorFlags::kExtBasicPathLenWrong))
         {
-            return 1;
+            if (attCertType == kAttCertType_DAC)
+            {
+                return 0;
+            }
+            else
+            {
+                return IsExtensionBasicCAPresent() ? static_cast<int>(kPathLength_NotSpecified) : 2;
+            }
+        }
+
+        // Correct Values:
+        if (attCertType == kAttCertType_DAC)
+        {
+            return IsExtensionBasicCAPresent() ? static_cast<int>(kPathLength_NotSpecified) : 0;
         }
         if (attCertType == kAttCertType_PAI)
         {
             return 0;
         }
-        return 0;
+        return 1;
     }
     bool IsExtensionBasicPathLenPresent()
     {
@@ -398,6 +405,7 @@ extern bool Cmd_ResignCert(int argc, char * argv[]);
 extern bool Cmd_ValidateAttCert(int argc, char * argv[]);
 extern bool Cmd_ValidateCert(int argc, char * argv[]);
 extern bool Cmd_PrintCert(int argc, char * argv[]);
+extern bool Cmd_PrintCD(int argc, char * argv[]);
 extern bool Cmd_GenAttCert(int argc, char * argv[]);
 
 extern bool ReadCert(const char * fileNameOrStr, X509 * cert);
@@ -410,12 +418,12 @@ extern bool WriteCert(const char * fileName, X509 * cert, CertFormat certFmt);
 extern bool WriteChipCert(const char * fileName, const chip::ByteSpan & cert, CertFormat certFmt);
 
 extern bool MakeCert(uint8_t certType, const ToolChipDN * subjectDN, X509 * caCert, EVP_PKEY * caKey, const struct tm & validFrom,
-                     uint32_t validDays, int pathLen, const FutureExtension * futureExts, uint8_t futureExtsCount, X509 * newCert,
-                     EVP_PKEY * newKey, CertStructConfig & certConfig);
+                     uint32_t validDays, int pathLen, const FutureExtensionWithNID * futureExts, uint8_t futureExtsCount,
+                     X509 * newCert, EVP_PKEY * newKey, CertStructConfig & certConfig);
 extern CHIP_ERROR MakeCertChipTLV(uint8_t certType, const ToolChipDN * subjectDN, X509 * caCert, EVP_PKEY * caKey,
-                                  const struct tm & validFrom, uint32_t validDays, int pathLen, const FutureExtension * futureExts,
-                                  uint8_t futureExtsCount, X509 * x509Cert, EVP_PKEY * newKey, CertStructConfig & certConfig,
-                                  chip::MutableByteSpan & chipCert);
+                                  const struct tm & validFrom, uint32_t validDays, int pathLen,
+                                  const FutureExtensionWithNID * futureExts, uint8_t futureExtsCount, X509 * x509Cert,
+                                  EVP_PKEY * newKey, CertStructConfig & certConfig, chip::MutableByteSpan & chipCert);
 extern bool ResignCert(X509 * cert, X509 * caCert, EVP_PKEY * caKey);
 
 extern bool MakeAttCert(AttCertType attCertType, const char * subjectCN, uint16_t subjectVID, uint16_t subjectPID,

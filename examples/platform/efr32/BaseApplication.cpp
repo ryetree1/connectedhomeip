@@ -34,6 +34,7 @@
 #endif // QR_CODE_ENABLED
 #endif // DISPLAY_ENABLED
 
+#include "EFR32DeviceDataProvider.h"
 #include <app-common/zap-generated/attribute-id.h>
 #include <app-common/zap-generated/attribute-type.h>
 #include <app-common/zap-generated/cluster-id.h>
@@ -120,6 +121,10 @@ bool mFunctionTimerActive;
 
 Identify * gIdentifyptr = nullptr;
 
+#ifdef DISPLAY_ENABLED
+SilabsLCD slLCD;
+#endif
+
 } // namespace
 
 /**********************************************************
@@ -152,7 +157,7 @@ CHIP_ERROR BaseApplication::Init(Identify * identifyObj)
 
     if (identifyObj == nullptr)
     {
-        EFR32_LOG("funct timer create failed");
+        EFR32_LOG("Invalid Identify Object!");
         appError(CHIP_ERROR_INVALID_ARGUMENT);
     }
 
@@ -206,23 +211,24 @@ CHIP_ERROR BaseApplication::Init(Identify * identifyObj)
 
     ConfigurationMgr().LogDeviceConfig();
 
-// Print setup info on LCD if available
-#ifdef QR_CODE_ENABLED
     // Create buffer for QR code that can fit max size and null terminator.
     char qrCodeBuffer[chip::QRCodeBasicSetupPayloadGenerator::kMaxQRCodeBase38RepresentationLength + 1];
     chip::MutableCharSpan QRCode(qrCodeBuffer);
 
-    if (GetQRCode(QRCode, chip::RendezvousInformationFlags(chip::RendezvousInformationFlag::kBLE)) == CHIP_NO_ERROR)
+    if (EFR32::EFR32DeviceDataProvider::GetDeviceDataProvider().GetSetupPayload(QRCode) == CHIP_NO_ERROR)
     {
-        LCDWriteQRCode((uint8_t *) QRCode.data());
+        // Print setup info on LCD if available
+#ifdef QR_CODE_ENABLED
+        slLCD.SetQRCode((uint8_t *) QRCode.data(), QRCode.size());
+        slLCD.ShowQRCode(true, true);
+#else
+        PrintQrCodeURL(QRCode);
+#endif // QR_CODE_ENABLED
     }
     else
     {
         EFR32_LOG("Getting QR code failed!");
     }
-#else
-    PrintOnboardingCodes(chip::RendezvousInformationFlag(chip::RendezvousInformationFlag::kBLE));
-#endif // QR_CODE_ENABLED
 
     return err;
 }
@@ -386,6 +392,11 @@ void BaseApplication::ButtonHandler(AppEvent * aEvent)
             CancelFunctionTimer();
             mFunction = kFunction_NoneSelected;
 
+#ifdef QR_CODE_ENABLED
+            // TOGGLE QRCode/LCD demo UI
+            slLCD.ToggleQRCode();
+#endif
+
 #ifdef SL_WIFI
             if (!ConnectivityMgr().IsWiFiStationProvisioned())
 #else
@@ -468,6 +479,13 @@ void BaseApplication::LightTimerEventHandler(TimerHandle_t xTimer)
 {
     LightEventHandler();
 }
+
+#ifdef DISPLAY_ENABLED
+SilabsLCD & BaseApplication::GetLCD(void)
+{
+    return slLCD;
+}
+#endif
 
 void BaseApplication::PostEvent(const AppEvent * aEvent)
 {

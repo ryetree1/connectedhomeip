@@ -69,7 +69,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               type: int16u
@@ -139,7 +139,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C4c.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: ColorTempPhysicalMinMiredsValue
@@ -156,7 +156,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C4c.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: ColorTempPhysicalMinMiredsValue
@@ -171,10 +171,10 @@ tests:
                 value: 5000
 
     #Issue https://github.com/CHIP-Specifications/chip-test-plans/issues/2175
-    - label: "TH reads ColorTemperature attribute from DUT."
+    - label: "TH reads ColorTemperatureMireds attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C4c.Rsp && PICS_SKIP_SAMPLE_APP
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           value: ColorTempPhysicalMaxMiredsValue
           constraints:
@@ -217,7 +217,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C4c.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: ColorTempPhysicalMinMiredsValue
@@ -234,7 +234,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C4c.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           constraints:
               minValue: ColorTempPhysicalMinMiredsValue
@@ -251,7 +251,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.F04 && CC.S.A0007 && CC.S.C4c.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           value: ColorTempPhysicalMinMiredsValue
           constraints:

@@ -1233,6 +1233,20 @@ static constexpr CommandId Id = 0x00000015;
 } // namespace Commands
 } // namespace TestCluster
 
+namespace FaultInjection {
+namespace Commands {
+
+namespace FailAtFault {
+static constexpr CommandId Id = 0x00000000;
+} // namespace FailAtFault
+
+namespace FailRandomlyAtFault {
+static constexpr CommandId Id = 0x00000001;
+} // namespace FailRandomlyAtFault
+
+} // namespace Commands
+} // namespace FaultInjection
+
 } // namespace Clusters
 } // namespace app
 } // namespace chip

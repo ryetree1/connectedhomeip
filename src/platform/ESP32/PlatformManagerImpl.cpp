@@ -37,7 +37,11 @@
 #include "esp_heap_caps_init.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "spi_flash_mmap.h"
+#else
 #include "esp_spi_flash.h"
+#endif
 #include "esp_system.h"
 #include "esp_wifi.h"
 
@@ -84,8 +88,9 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
         wifi_init_config_t cfg;
         uint8_t ap_mac[6];
         wifi_mode_t mode;
-
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI_AP
         esp_netif_create_default_wifi_ap();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI_AP
         esp_netif_create_default_wifi_sta();
 
         esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, PlatformManagerImpl::HandleESPSystemEvent, NULL);
@@ -149,6 +154,8 @@ void PlatformManagerImpl::_Shutdown()
     }
 
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_Shutdown();
+
+    esp_event_loop_delete_default();
 }
 
 void PlatformManagerImpl::HandleESPSystemEvent(void * arg, esp_event_base_t eventBase, int32_t eventId, void * eventData)

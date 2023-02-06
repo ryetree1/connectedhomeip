@@ -1,1 +1,1 @@
-0.5.93 Version bump reason: [ESP32] Update ESP-IDF to release v4.4.2
+0.6.03 Version bump reason: [Ameba] Replace C2 notify with indicate as required by Matter spec

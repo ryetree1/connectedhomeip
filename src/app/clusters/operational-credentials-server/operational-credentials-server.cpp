@@ -329,9 +329,6 @@ void OnPlatformEventHandler(const chip::DeviceLayer::ChipDeviceEvent * event, in
 
 } // anonymous namespace
 
-// As per specifications section 11.22.5.1. Constant RESP_MAX
-constexpr size_t kMaxRspLen = 900;
-
 class OpCredsFabricTableDelegate : public chip::FabricTable::Delegate
 {
 public:
@@ -849,7 +846,7 @@ exit:
     else
     {
         commandObj->AddStatus(commandPath, nonDefaultStatus);
-        ChipLogError(Zcl, "OpCreds: Failed AddNOC request with IM error 0x%02x", to_underlying(nonDefaultStatus));
+        ChipLogError(Zcl, "OpCreds: Failed UpdateNOC request with IM error 0x%02x", to_underlying(nonDefaultStatus));
     }
 
     return true;
@@ -962,7 +959,7 @@ bool emberAfOperationalCredentialsClusterAttestationRequestCallback(app::Command
     attestationElementsSpan = MutableByteSpan{ attestationElements.Get(), attestationElementsLen };
     err = Credentials::ConstructAttestationElements(certDeclSpan, attestationNonce, timestamp, kEmptyFirmwareInfo,
                                                     emptyVendorReserved, attestationElementsSpan);
-    VerifyOrExit((err == CHIP_NO_ERROR) && (attestationElementsSpan.size() <= kMaxRspLen), finalStatus = Status::Failure);
+    VerifyOrExit(err == CHIP_NO_ERROR, finalStatus = Status::Failure);
 
     // Append attestation challenge in the back of the reserved space for the signature
     memcpy(attestationElements.Get() + attestationElementsSpan.size(), attestationChallenge.data(), attestationChallenge.size());
@@ -972,7 +969,7 @@ bool emberAfOperationalCredentialsClusterAttestationRequestCallback(app::Command
         Crypto::P256ECDSASignature signature;
         MutableByteSpan signatureSpan{ signature.Bytes(), signature.Capacity() };
 
-        // Getnerate attestation signature
+        // Generate attestation signature
         err = dacProvider->SignWithDeviceAttestationKey(tbsSpan, signatureSpan);
         ClearSecretData(attestationElements.Get() + attestationElementsSpan.size(), attestationChallenge.size());
         VerifyOrExit(err == CHIP_NO_ERROR, finalStatus = Status::Failure);
@@ -1093,7 +1090,7 @@ bool emberAfOperationalCredentialsClusterCSRRequestCallback(app::CommandHandler 
 
         err = Credentials::ConstructNOCSRElements(ByteSpan{ csrSpan.data(), csrSpan.size() }, CSRNonce, kNoVendorReserved,
                                                   kNoVendorReserved, kNoVendorReserved, nocsrElementsSpan);
-        VerifyOrExit((err == CHIP_NO_ERROR) && (nocsrElementsSpan.size() <= kMaxRspLen), finalStatus = Status::Failure);
+        VerifyOrExit(err == CHIP_NO_ERROR, finalStatus = Status::Failure);
 
         // Append attestation challenge in the back of the reserved space for the signature
         memcpy(nocsrElements.Get() + nocsrElementsSpan.size(), attestationChallenge.data(), attestationChallenge.size());
@@ -1105,7 +1102,7 @@ bool emberAfOperationalCredentialsClusterCSRRequestCallback(app::CommandHandler 
             Crypto::P256ECDSASignature signature;
             MutableByteSpan signatureSpan{ signature.Bytes(), signature.Capacity() };
 
-            // Getnerate attestation signature
+            // Generate attestation signature
             err = dacProvider->SignWithDeviceAttestationKey(tbsSpan, signatureSpan);
             ClearSecretData(nocsrElements.Get() + nocsrElementsSpan.size(), attestationChallenge.size());
             VerifyOrExit(err == CHIP_NO_ERROR, finalStatus = Status::Failure);

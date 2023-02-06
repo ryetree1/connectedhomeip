@@ -306,7 +306,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.A0007 && CC.S.C4b.Rsp && CC.S.C47.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           saveAs: ColorTemperatureStep4f
           constraints:
@@ -326,7 +326,7 @@ tests:
     - label: "TH reads ColorTemperature attribute from DUT."
       PICS: CC.S.A0007 && CC.S.C4b.Rsp && CC.S.C47.Rsp
       command: "readAttribute"
-      attribute: "ColorTemperature"
+      attribute: "ColorTemperatureMireds"
       response:
           value: ColorTemperatureStep4f
 
