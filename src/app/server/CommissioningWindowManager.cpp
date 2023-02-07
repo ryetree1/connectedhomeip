@@ -124,7 +124,7 @@ void CommissioningWindowManager::HandleFailedAttempt(CHIP_ERROR err)
     ChipLogError(AppServer, "Commissioning failed (attempt %d): %" CHIP_ERROR_FORMAT, mFailedCommissioningAttempts, err.Format());
 	if (err.Format() == 0x32)	// Timeout error  LEV-MOD
 	{
-		Lev_Report_Matter_Error(MATTER_ENROLL_ERROR_TIMEOUT);
+		Lev_Report_Matter_Error(MATTER_ENROLL_ERROR_TIMEOUT); // LEV-MOD
 	}
 #if CONFIG_NETWORK_LAYER_BLE
     mServer->GetBleLayerObject()->CloseAllBleConnections();
@@ -212,6 +212,8 @@ CHIP_ERROR CommissioningWindowManager::OpenCommissioningWindow(Seconds16 commiss
     ReturnErrorOnFailure(DeviceLayer::SystemLayer().StartTimer(commissioningTimeout, HandleCommissioningWindowTimeout, this));
 
     mCommissioningTimeoutTimerArmed = true;
+
+	Lev_Matter_Start_Commissioning_Window();	// LEV-MOD
 
     return AdvertiseAndListenForPASE();
 }
@@ -349,6 +351,7 @@ void CommissioningWindowManager::CloseCommissioningWindow()
 #endif
         ChipLogProgress(AppServer, "Closing pairing window");
         Cleanup();
+		Lev_Matter_Stop_Commissioning_Window();	// LEV-MOD
     }
 }
 
