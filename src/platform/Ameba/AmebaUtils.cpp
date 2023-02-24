@@ -157,8 +157,7 @@ CHIP_ERROR AmebaUtils::WiFiConnect(void)
     memset(config, 0, sizeof(rtw_wifi_config_t));
     GetWiFiConfig(config);
     ChipLogProgress(DeviceLayer, "Connecting to AP : [%s]", (char *) config->ssid);
-    int ameba_err = wifi_connect((char *) config->ssid, RTW_SECURITY_WPA_WPA2_MIXED, (char *) config->password,
-                                 strlen((const char *) config->ssid), strlen((const char *) config->password), 0, NULL);
+	int ameba_err = wifi_connect((char *) config->ssid, (strlen((const char *) config->password) > 0 ? RTW_SECURITY_WPA_WPA2_MIXED : RTW_SECURITY_OPEN), (char *) config->password,strlen((const char *) config->ssid), strlen((const char *) config->password), 0, NULL); // LEV-MOD
 
     vPortFree(config);
     err = (ameba_err == RTW_SUCCESS) ? CHIP_NO_ERROR : CHIP_ERROR_INTERNAL;

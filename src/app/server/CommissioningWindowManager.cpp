@@ -124,7 +124,7 @@ void CommissioningWindowManager::HandleFailedAttempt(CHIP_ERROR err)
     ChipLogError(AppServer, "Commissioning failed (attempt %d): %" CHIP_ERROR_FORMAT, mFailedCommissioningAttempts, err.Format());
 	if (err.Format() == 0x32)	// Timeout error  LEV-MOD
 	{
-		Lev_Report_Matter_Error(MATTER_ENROLL_ERROR_TIMEOUT); // LEV-MOD
+		Lev_Report_Matter_Status(MATTER_ENROLL_ERROR_TIMEOUT); // LEV-MOD
 	}
 #if CONFIG_NETWORK_LAYER_BLE
     mServer->GetBleLayerObject()->CloseAllBleConnections();

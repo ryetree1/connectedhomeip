@@ -22,6 +22,7 @@
 #include <lib/support/SafeInt.h>
 #include <lib/support/logging/CHIPLogging.h>
 #include <transport/SessionManager.h>
+#include "Lev_Matter_Port.h"    // LEV-MOD
 
 using namespace ::chip::Inet;
 using namespace ::chip::Transport;
@@ -156,7 +157,7 @@ void CASEServer::PrepareForSessionEstablishment(const ScopedNodeId & previouslyE
 void CASEServer::OnSessionEstablishmentError(CHIP_ERROR err)
 {
     ChipLogError(Inet, "CASE Session establishment failed: %" CHIP_ERROR_FORMAT, err.Format());
-
+	Lev_Report_Matter_Status(MATTER_CASE_ESTABLISHMENT_FAILED); // LEV-MOD
     //
     // We're not allowed to call methods that will eventually result in calling SessionManager::AllocateSecureSession
     // from a SessionDelegate::OnSessionReleased callback. Schedule the preparation as an async work item.
@@ -173,6 +174,7 @@ void CASEServer::OnSessionEstablished(const SessionHandle & session)
 {
     ChipLogProgress(Inet, "CASE Session established to peer: " ChipLogFormatScopedNodeId,
                     ChipLogValueScopedNodeId(session->GetPeer()));
+	Lev_Report_Matter_Status(MATTER_CASE_ESTABLISHMENT_SUCCEEDED); // LEV-MOD
     PrepareForSessionEstablishment(session->GetPeer());
 }
 } // namespace chip
