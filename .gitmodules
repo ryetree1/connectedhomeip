@@ -283,9 +283,3 @@
 	url = https://github.com/matter-mtk/genio-matter-lwip.git
 	branch = main
 	platforms = genio
-[submodule "bouffalolab_sdk"]
-        path = third_party/bouffalolab/repo
-        url = https://github.com/bouffalolab/bl_iot_sdk_tiny.git
-        branch = master
-        platforms = bouffalolab
-
