@@ -623,6 +623,7 @@ CHIP_ERROR CASESession::HandleSigma1(System::PacketBufferHandle && msg)
         ChipLogError(SecureChannel, "CASE failed to match destination ID with local fabrics");
         ChipLogByteSpan(SecureChannel, destinationIdentifier);
     }
+	SuccessOrExit(err); // LEV-MOD, this was added in a future commit that we are not at yet
 
     // ParseSigma1 ensures that:
     // mRemotePubKey.Length() == initiatorPubKey.size() == kP256_PublicKey_Length.
