@@ -149,7 +149,7 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
     if (event->Type == DeviceEventType::kRtkWiFiStationConnectedEvent)
     {
         ChipLogProgress(DeviceLayer, "WiFiStationConnected");
-        if (mWiFiStationState == kWiFiStationState_Connecting)
+        //if (mWiFiStationState == kWiFiStationState_Connecting) // LEV-MOD, need to do this for devices that take multiple attempts to join wifi
         {
             ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
         }
