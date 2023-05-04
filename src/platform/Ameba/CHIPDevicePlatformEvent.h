@@ -51,7 +51,8 @@ enum InternalPlatformSpecificEventTypes
     kRtkWiFiStationConnectedEvent,
     kRtkWiFiStationDisconnectedEvent,
     kRtkWiFiScanCompletedEvent,
-};
+	kRtkWiFiStation4WayHandhsakeEvent,
+}; // LEV-MOD
 
 } // namespace DeviceEventType
 

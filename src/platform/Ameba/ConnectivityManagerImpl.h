@@ -154,6 +154,7 @@ private:
     static void RefreshMessageLayer(void);
     static void RtkWiFiStationConnectedHandler(char * buf, int buf_len, int flags, void * userdata);
     static void RtkWiFiStationDisconnectedHandler(char * buf, int buf_len, int flags, void * userdata);
+	static void RtkWiFiStation4WayHandshakeHandler(char * buf, int buf_len, int flags, void * userdata);	// LEV-MOD
     static void RtkWiFiScanCompletedHandler(void);
     void DHCPProcess(void);
     static void DHCPProcessThread(void * param);

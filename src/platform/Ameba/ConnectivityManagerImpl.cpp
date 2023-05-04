@@ -86,6 +86,7 @@ CHIP_ERROR ConnectivityManagerImpl::_Init()
     // Register WiFi event handlers
     wifi_reg_event_handler(WIFI_EVENT_CONNECT, ConnectivityManagerImpl::RtkWiFiStationConnectedHandler, NULL);
     wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, ConnectivityManagerImpl::RtkWiFiStationDisconnectedHandler, NULL);
+	wifi_reg_event_handler(WIFI_EVENT_FOURWAY_HANDSHAKE_DONE, ConnectivityManagerImpl::RtkWiFiStation4WayHandshakeHandler, NULL);	// LEV-MOD
 
     err = Internal::AmebaUtils::StartWiFi();
     SuccessOrExit(err);
@@ -148,6 +149,7 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     if (event->Type == DeviceEventType::kRtkWiFiStationConnectedEvent)
     {
+		printf ("PROCESSING kRtkWiFiStationConnectedEvent\n");
         ChipLogProgress(DeviceLayer, "WiFiStationConnected");
         //if (mWiFiStationState == kWiFiStationState_Connecting) // LEV-MOD, need to do this for devices that take multiple attempts to join wifi
         {
@@ -155,8 +157,14 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
         }
         if (rtw_join_status & JOIN_HANDSHAKE_DONE) // LEV-MOD this is added in future commits that we are not at yet
         {
-            DHCPProcess();
+          //  DHCPProcess();
         }
+        DriveStationState();
+    }
+	if (event->Type == DeviceEventType::kRtkWiFiStation4WayHandhsakeEvent)	// LEV-MOD
+    {
+		printf ("PROCESSING kRtkWiFiStation4WayHandhsakeEvent\n");
+		DHCPProcess();
         DriveStationState();
     }
     if (event->Type == DeviceEventType::kRtkWiFiStationDisconnectedEvent)
@@ -848,6 +856,15 @@ void ConnectivityManagerImpl::RtkWiFiStationDisconnectedHandler(char * buf, int 
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiStationDisconnectedEvent;
 	printf("RtkWiFiStationDisconnectedHandler\n");
+    PlatformMgr().PostEventOrDie(&event);
+}
+
+void ConnectivityManagerImpl::RtkWiFiStation4WayHandshakeHandler(char * buf, int buf_len, int flags, void * userdata)
+{
+    ChipDeviceEvent event;
+    memset(&event, 0, sizeof(event));
+    event.Type = DeviceEventType::kRtkWiFiStation4WayHandhsakeEvent;
+	printf("kRtkWiFiStation4WayHandshakeHandler\n");
     PlatformMgr().PostEventOrDie(&event);
 }
 
