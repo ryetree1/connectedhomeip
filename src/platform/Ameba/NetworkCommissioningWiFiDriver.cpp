@@ -63,9 +63,21 @@ void AmebaWiFiDriver::Shutdown()
 CHIP_ERROR AmebaWiFiDriver::CommitConfiguration()
 {
     rtw_wifi_config_t config = { 0 };
-    memcpy(config.ssid, mStagingNetwork.ssid, mStagingNetwork.ssidLen);
-    memcpy(config.password, mStagingNetwork.credentials, mStagingNetwork.credentialsLen);
-    ReturnErrorOnFailure(chip::DeviceLayer::Internal::AmebaUtils::SetWiFiConfig(&config));
+
+	if (mStagingNetwork.ssidLen == 0)	// LEV-MOD
+	{
+		chip::DeviceLayer::Internal::AmebaUtils::GetWiFiConfig(&config);
+		mStagingNetwork.ssidLen = config.ssid_len;
+		memcpy(mStagingNetwork.ssid, config.ssid, mStagingNetwork.ssidLen); 
+		mStagingNetwork.credentialsLen = config.password_len;
+		memcpy(mStagingNetwork.credentials, config.password, mStagingNetwork.credentialsLen); 
+	}
+	else
+	{
+		memcpy(config.ssid, mStagingNetwork.ssid, mStagingNetwork.ssidLen);
+		memcpy(config.password, mStagingNetwork.credentials, mStagingNetwork.credentialsLen);
+		ReturnErrorOnFailure(chip::DeviceLayer::Internal::AmebaUtils::SetWiFiConfig(&config));
+	} 
 
     mSavedNetwork = mStagingNetwork;
     return CHIP_NO_ERROR;
