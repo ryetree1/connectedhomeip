@@ -63,6 +63,7 @@ namespace chip {
 namespace DeviceLayer {
 
 ConnectivityManagerImpl ConnectivityManagerImpl::sInstance;
+bool Lev_Allow_DHCP = FALSE; // LEV-MOD
 
 // ==================== ConnectivityManager Platform Internal Methods ====================
 
@@ -159,12 +160,24 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
         {
           //  DHCPProcess();
         }
+		Lev_Allow_DHCP = TRUE;
         DriveStationState();
     }
 	if (event->Type == DeviceEventType::kRtkWiFiStation4WayHandhsakeEvent)	// LEV-MOD
     {
 		printf ("PROCESSING kRtkWiFiStation4WayHandhsakeEvent\n");
-		DHCPProcess();
+		//uint8_t *ip = LwIP_GetIP(&xnetif[0]);	// LEV-MOD
+        //if ((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0))
+		//	DHCPProcess();
+		//else
+		//printf ("RYAN TEST %02X %02X %02X %02x\n",ip[0],ip[1],ip[2],ip[3]);	
+
+		if (Lev_Allow_DHCP == TRUE)
+		{
+			printf ("DHCP START\n");
+			DHCPProcess();
+			Lev_Allow_DHCP = FALSE;
+		}
         DriveStationState();
     }
     if (event->Type == DeviceEventType::kRtkWiFiStationDisconnectedEvent)
