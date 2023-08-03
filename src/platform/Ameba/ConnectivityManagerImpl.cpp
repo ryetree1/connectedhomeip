@@ -160,6 +160,15 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
         {
           //  DHCPProcess();
         }
+		
+		// LEV-MOD
+		// Only do DHCP if connect to an open network
+		rtw_wifi_setting_t wifi_setting;
+		wifi_get_setting(WLAN0_NAME, &wifi_setting);
+		if (strlen((char*)wifi_setting.password) == 0)
+		{
+			DHCPProcess();
+		}
 		Lev_Allow_DHCP = TRUE;
         DriveStationState();
     }
