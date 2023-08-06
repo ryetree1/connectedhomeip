@@ -128,11 +128,11 @@ CHIP_ERROR Server::Init(const ServerInitParams & initParams)
 
     // Initialize PersistentStorageDelegate-based storage
     mDeviceStorage            = initParams.persistentStorageDelegate;
-    mSessionResumptionStorage = initParams.sessionResumptionStorage;
+    mSessionResumptionStorage      = initParams.sessionResumptionStorage;
     mOperationalKeystore      = initParams.operationalKeystore;
     mOpCertStore              = initParams.opCertStore;
 
-    mCertificateValidityPolicy = initParams.certificateValidityPolicy;
+     mCertificateValidityPolicy.Init(initParams.certificateValidityPolicy);
 
 #if defined(CHIP_SUPPORT_ENABLE_STORAGE_API_AUDIT)
     VerifyOrDie(chip::audit::ExecutePersistentStorageApiAudit(*mDeviceStorage));
@@ -294,7 +294,7 @@ CHIP_ERROR Server::Init(const ServerInitParams & initParams)
         .sessionInitParams =  {
             .sessionManager    = &mSessions,
             .sessionResumptionStorage = mSessionResumptionStorage,
-            .certificateValidityPolicy = mCertificateValidityPolicy,
+            .certificateValidityPolicy = &mCertificateValidityPolicy,
             .exchangeMgr       = &mExchangeMgr,
             .fabricTable       = &mFabrics,
             .clientPool        = &mCASEClientPool,
@@ -308,7 +308,7 @@ CHIP_ERROR Server::Init(const ServerInitParams & initParams)
     SuccessOrExit(err);
 
     err = mCASEServer.ListenForSessionEstablishment(&mExchangeMgr, &mSessions, &mFabrics, mSessionResumptionStorage,
-                                                    mCertificateValidityPolicy, mGroupsProvider);
+                                                    &mCertificateValidityPolicy, mGroupsProvider);
     SuccessOrExit(err);
 
     err = chip::app::InteractionModelEngine::GetInstance()->Init(&mExchangeMgr, &GetFabricTable(), &mCASESessionManager);
