@@ -160,14 +160,11 @@ CHIP_ERROR AmebaUtils::WiFiConnect(void)
     ChipLogProgress(DeviceLayer, "Connecting to AP : [%s]", (char *) config->ssid);
 	//int ameba_err = wifi_connect((char *) config->ssid, (strlen((const char *) config->password) > 0 ? RTW_SECURITY_WPA_WPA2_MIXED : RTW_SECURITY_OPEN), (char *) config->password,strlen((const char *) config->ssid), strlen((const char *) config->password), 0, NULL); // LEV-MOD
 	int ameba_err = 1;
-	uint8_t attempts = 0;
+
+	ameba_err = Lev_Wifi_Connect_Mesh((char *) config->ssid, (strlen((const char *) config->password) > 0 ? RTW_SECURITY_WPA_WPA2_MIXED : RTW_SECURITY_OPEN), (char *) config->password,strlen((const char *) config->ssid), strlen((const char *) config->password)); // LEV-MOD
 	
-	while (ameba_err != RTW_SUCCESS && attempts < 7)
-	{
-		ameba_err = Lev_Wifi_Connect_Mesh((char *) config->ssid, (strlen((const char *) config->password) > 0 ? RTW_SECURITY_WPA_WPA2_MIXED : RTW_SECURITY_OPEN), (char *) config->password,strlen((const char *) config->ssid), strlen((const char *) config->password)); // LEV-MOD
-		attempts++;
-	}
 	vPortFree(config);
     err = (ameba_err == RTW_SUCCESS) ? CHIP_NO_ERROR : CHIP_ERROR_INTERNAL;
+
     return err;
 }
