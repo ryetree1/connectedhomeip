@@ -65,6 +65,16 @@ namespace DeviceLayer {
 ConnectivityManagerImpl ConnectivityManagerImpl::sInstance;
 bool Lev_Allow_DHCP = FALSE; // LEV-MOD
 
+typedef enum	// LEV-MOD
+{
+	CURRENT_WIFI_STATE_NONE = 0,
+	CURRENT_WIFI_STATE_CONNECTED = 1,
+	CURRENT_WIFI_STATE_HANDSHAKE = 2,
+	CURRENT_WIFI_STATE_DISCONNECTED = 3,
+}Current_Wifi_State_t;
+
+Current_Wifi_State_t Current_Wifi_State = CURRENT_WIFI_STATE_NONE;
+
 // ==================== ConnectivityManager Platform Internal Methods ====================
 
 CHIP_ERROR ConnectivityManagerImpl::_Init()
@@ -146,56 +156,64 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     GenericConnectivityManagerImpl_Thread<ConnectivityManagerImpl>::_OnPlatformEvent(event);
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
-
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     if (event->Type == DeviceEventType::kRtkWiFiStationConnectedEvent)
     {
-		printf ("PROCESSING kRtkWiFiStationConnectedEvent\n");
-        ChipLogProgress(DeviceLayer, "WiFiStationConnected");
-        //if (mWiFiStationState == kWiFiStationState_Connecting) // LEV-MOD, need to do this for devices that take multiple attempts to join wifi
-        {
-            ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
-        }
-        if (rtw_join_status & JOIN_HANDSHAKE_DONE) // LEV-MOD this is added in future commits that we are not at yet
-        {
-          //  DHCPProcess();
-        }
-		
-		// LEV-MOD
-		// Only do DHCP if connect to an open network
-		rtw_wifi_setting_t wifi_setting;
-		wifi_get_setting(WLAN0_NAME, &wifi_setting);
-		if (strlen((char*)wifi_setting.password) == 0)
+		if (Current_Wifi_State == CURRENT_WIFI_STATE_CONNECTED || Current_Wifi_State == CURRENT_WIFI_STATE_HANDSHAKE)
 		{
-			DHCPProcess();
+			printf ("PROCESSING kRtkWiFiStationConnectedEvent\n");
+			ChipLogProgress(DeviceLayer, "WiFiStationConnected");
+			//if (mWiFiStationState == kWiFiStationState_Connecting) // LEV-MOD, need to do this for devices that take multiple attempts to join wifi
+			{
+				ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
+			}
+			if (rtw_join_status & JOIN_HANDSHAKE_DONE) // LEV-MOD this is added in future commits that we are not at yet
+			{
+			//  DHCPProcess();
+			}
+			
+			// LEV-MOD
+			// Only do DHCP if connect to an open network
+			rtw_wifi_setting_t wifi_setting;
+			wifi_get_setting(WLAN0_NAME, &wifi_setting);
+			if (strlen((char*)wifi_setting.password) == 0)
+			{
+				DHCPProcess();
+			}
+			Lev_Allow_DHCP = TRUE;
+			DriveStationState();
 		}
-		Lev_Allow_DHCP = TRUE;
-        DriveStationState();
     }
 	if (event->Type == DeviceEventType::kRtkWiFiStation4WayHandhsakeEvent)	// LEV-MOD
     {
-		printf ("PROCESSING kRtkWiFiStation4WayHandhsakeEvent\n");
-		//uint8_t *ip = LwIP_GetIP(&xnetif[0]);	// LEV-MOD
-        //if ((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0))
-		//	DHCPProcess();
+		if (Current_Wifi_State == CURRENT_WIFI_STATE_HANDSHAKE)
+		{	
+			printf ("PROCESSING kRtkWiFiStation4WayHandhsakeEvent\n");
+			//uint8_t *ip = LwIP_GetIP(&xnetif[0]);	// LEV-MOD
+			//if ((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0))
+			//	DHCPProcess();
 
-		if (Lev_Allow_DHCP == TRUE)
-		{
-			printf ("DHCP START\n");
-			DHCPProcess();
-			Lev_Allow_DHCP = FALSE;
+			if (Lev_Allow_DHCP == TRUE)
+			{
+				printf ("DHCP START\n");
+				DHCPProcess();
+				Lev_Allow_DHCP = FALSE;
+			}
+			DriveStationState();
 		}
-        DriveStationState();
     }
     if (event->Type == DeviceEventType::kRtkWiFiStationDisconnectedEvent)
     {
-        ChipLogProgress(DeviceLayer, "WiFiStationDisconnected");
-        NetworkCommissioning::AmebaWiFiDriver::GetInstance().SetLastDisconnectReason(event);
-        if (mWiFiStationState == kWiFiStationState_Connecting)
-        {
-            ChangeWiFiStationState(kWiFiStationState_Connecting_Failed);
-        }
-        DriveStationState();
+		if (Current_Wifi_State == CURRENT_WIFI_STATE_DISCONNECTED)
+		{
+			ChipLogProgress(DeviceLayer, "WiFiStationDisconnected");
+			NetworkCommissioning::AmebaWiFiDriver::GetInstance().SetLastDisconnectReason(event);
+			if (mWiFiStationState == kWiFiStationState_Connecting)
+			{
+				ChangeWiFiStationState(kWiFiStationState_Connecting_Failed);
+			}
+			DriveStationState();
+		}
     }
     if (event->Type == DeviceEventType::kRtkWiFiScanCompletedEvent)
     {
@@ -867,6 +885,7 @@ void ConnectivityManagerImpl::RtkWiFiStationConnectedHandler(char * buf, int buf
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiStationConnectedEvent;
 	printf("RtkWiFiStationConnectedHandler\n");
+	Current_Wifi_State = CURRENT_WIFI_STATE_CONNECTED;
     PlatformMgr().PostEventOrDie(&event);
 }
 
@@ -876,6 +895,7 @@ void ConnectivityManagerImpl::RtkWiFiStationDisconnectedHandler(char * buf, int 
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiStationDisconnectedEvent;
 	printf("RtkWiFiStationDisconnectedHandler\n");
+	Current_Wifi_State = CURRENT_WIFI_STATE_DISCONNECTED;
     PlatformMgr().PostEventOrDie(&event);
 }
 
@@ -885,6 +905,7 @@ void ConnectivityManagerImpl::RtkWiFiStation4WayHandshakeHandler(char * buf, int
     memset(&event, 0, sizeof(event));
     event.Type = DeviceEventType::kRtkWiFiStation4WayHandhsakeEvent;
 	printf("kRtkWiFiStation4WayHandshakeHandler\n");
+	Current_Wifi_State = CURRENT_WIFI_STATE_HANDSHAKE;
     PlatformMgr().PostEventOrDie(&event);
 }
 
