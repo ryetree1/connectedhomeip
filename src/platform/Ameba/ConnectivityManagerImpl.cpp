@@ -180,9 +180,9 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 			{
 				DHCPProcess();
 			}
-			Lev_Allow_DHCP = TRUE;
-			DriveStationState();
+			Lev_Allow_DHCP = TRUE;	
 		}
+		DriveStationState();
     }
 	if (event->Type == DeviceEventType::kRtkWiFiStation4WayHandhsakeEvent)	// LEV-MOD
     {
@@ -199,8 +199,9 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 				DHCPProcess();
 				Lev_Allow_DHCP = FALSE;
 			}
-			DriveStationState();
+			
 		}
+		DriveStationState();
     }
     if (event->Type == DeviceEventType::kRtkWiFiStationDisconnectedEvent)
     {
@@ -212,8 +213,8 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 			{
 				ChangeWiFiStationState(kWiFiStationState_Connecting_Failed);
 			}
-			DriveStationState();
 		}
+		DriveStationState();
     }
     if (event->Type == DeviceEventType::kRtkWiFiScanCompletedEvent)
     {
@@ -594,6 +595,7 @@ void ConnectivityManagerImpl::DriveStationState()
                 {
                     ChipLogError(DeviceLayer, "WiFiConnect() failed: %s", chip::ErrorStr(err));
 					Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECT_FAILED); // LEV-MOD
+					DeviceLayer::SystemLayer().ScheduleWork(DriveStationState, NULL);	// LEV-MOD
                 }
                 SuccessOrExit(err);
 				Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECTED); // LEV-MOD
