@@ -595,7 +595,8 @@ void ConnectivityManagerImpl::DriveStationState()
                 {
                     ChipLogError(DeviceLayer, "WiFiConnect() failed: %s", chip::ErrorStr(err));
 					Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECT_FAILED); // LEV-MOD
-					DeviceLayer::SystemLayer().ScheduleWork(DriveStationState, NULL);	// LEV-MOD
+					DeviceLayer::SystemLayer().CancelTimer(DriveStationState, nullptr);
+					DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(60000), DriveStationState, nullptr);
                 }
                 SuccessOrExit(err);
 				Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECTED); // LEV-MOD
