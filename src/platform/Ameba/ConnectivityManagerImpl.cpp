@@ -590,7 +590,10 @@ void ConnectivityManagerImpl::DriveStationState()
             {
                 ChipLogProgress(DeviceLayer, "Attempting to connect WiFi station interface");
 				Lev_Matter_Wifi_Connect_Status(LEV_MATTER_WIFI_CONNECT_STATUS_CONNECTING); // LEV-MOD
-                err = Internal::AmebaUtils::WiFiConnect();
+				if (Matter_Wifi_Rejoin_Paused())
+					err = CHIP_ERROR_CONNECTION_ABORTED;
+				else
+                	err = Internal::AmebaUtils::WiFiConnect();
                 if (err != CHIP_NO_ERROR)
                 {
                     ChipLogError(DeviceLayer, "WiFiConnect() failed: %s", chip::ErrorStr(err));
