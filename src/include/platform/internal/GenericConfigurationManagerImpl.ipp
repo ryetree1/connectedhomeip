@@ -449,7 +449,10 @@ CHIP_ERROR GenericConfigurationManagerImpl<ConfigClass>::GetCountryCode(char * b
 template <class ConfigClass>
 CHIP_ERROR GenericConfigurationManagerImpl<ConfigClass>::StoreCountryCode(const char * code, size_t codeLen)
 {
-    return WriteConfigValueStr(ConfigClass::kConfigKey_CountryCode, code, codeLen);
+	if (codeLen != 0)	// LEV-MOD
+    	return WriteConfigValueStr(ConfigClass::kConfigKey_CountryCode, code, codeLen);
+	else 
+		return CHIP_NO_ERROR;	
 }
 
 template <class ImplClass>
